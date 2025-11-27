@@ -16,11 +16,39 @@ wget https://raw.githubusercontent.com/EthanHoward/SDSN-25/refs/heads/main/clien
 
 wget https://raw.githubusercontent.com/EthanHoward/SDSN-25/refs/heads/main/client_config.ini
 
-echo "Starting client to generate keys"
-
 chmod +x client.py
 
-./client.py
+sudo tee "/etc/systemd/system/lcli.service" > /dev/null <<EOF
+[Unit]
+Description=Log Client Service
+After=network.target
 
-echo "Remember to configure the client parameters."
-echo "Share key via scp client_rsa_public_key.pem user@server:/usr/local/bin/lsvr/"
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/lcli/client.py
+Restart=on-failure
+
+WorkingDirectory=/usr/local/bin/lcli
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
+EOF
+
+echo "Service Created"
+
+echo "Starting client service to generate keys"
+
+systemctl start lcli
+
+systemctl status lcli
+
+echo "TODO:"
+echo " - Set up your config file, client_config.ini"
+echo " - Copy your client public key over to the server key directory, named as client_<contents of /etc/machine-id>_rsa_public_key.pem (should already be named this)"
+echo " - Copy your server public key over to the client key directory, named as server_rsa_public_key.pem (should already be named this)"
+echo ""
+echo "Share key via scp local_src user@server:/remote_dest"
+echo ""
+echo "Copy server key to here via scp user@server:/remote_src local_dest

@@ -1,3 +1,12 @@
 TODO:
 
-Add Reverse Control Socket
+CRY
+
+
+INSTALL SERVER:
+
+curl -fsSL https://raw.githubusercontent.com/EthanHoward/SDSN-25/refs/heads/main/install_client.sh | sudo bash
+
+INSTALL CLIENT:
+
+curl -fsSL https://raw.githubusercontent.com/EthanHoward/SDSN-25/refs/heads/main/install_server.sh | sudo bash
