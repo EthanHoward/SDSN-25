@@ -1,0 +1,391 @@
+2025-11-24T00:11:51.356585+00:00 utop2 pkexec: pam_unix(polkit-1:session): session opened for user root(uid=0) by ethan(uid=1000)
+2025-11-24T00:11:51.357364+00:00 utop2 pkexec[7779]: ethan: Executing command [USER=root] [TTY=unknown] [CWD=/home/ethan] [COMMAND=/usr/lib/update-notifier/package-system-locked]
+2025-11-24T00:14:51.177557+00:00 utop2 pkexec: pam_unix(polkit-1:session): session opened for user root(uid=0) by ethan(uid=1000)
+2025-11-24T00:14:51.400494+00:00 utop2 pkexec[19697]: ethan: Executing command [USER=root] [TTY=unknown] [CWD=/home/ethan] [COMMAND=/usr/lib/update-notifier/package-system-locked]
+2025-11-24T00:15:01.144517+00:00 utop2 CRON[19707]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T00:15:01.150004+00:00 utop2 CRON[19707]: pam_unix(cron:session): session closed for user root
+2025-11-24T00:17:01.159601+00:00 utop2 CRON[19785]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T00:17:01.165818+00:00 utop2 CRON[19785]: pam_unix(cron:session): session closed for user root
+2025-11-24T00:18:53.209930+00:00 utop2 dbus-daemon[920]: [system] Failed to activate service 'org.bluez': timed out (service_start_timeout=25000ms)
+2025-11-24T00:25:01.174342+00:00 utop2 CRON[19916]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T00:25:01.232345+00:00 utop2 CRON[19916]: pam_unix(cron:session): session closed for user root
+2025-11-24T00:35:01.196891+00:00 utop2 CRON[19950]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T00:35:01.202893+00:00 utop2 CRON[19950]: pam_unix(cron:session): session closed for user root
+2025-11-24T00:45:01.219036+00:00 utop2 CRON[19974]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T00:45:01.410286+00:00 utop2 CRON[19974]: pam_unix(cron:session): session closed for user root
+2025-11-24T00:55:01.241361+00:00 utop2 CRON[19984]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T00:55:01.248370+00:00 utop2 CRON[19984]: pam_unix(cron:session): session closed for user root
+2025-11-24T01:05:01.263000+00:00 utop2 CRON[20013]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T01:05:01.273760+00:00 utop2 CRON[20013]: pam_unix(cron:session): session closed for user root
+2025-11-24T01:15:01.293722+00:00 utop2 CRON[20025]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T01:15:01.304552+00:00 utop2 CRON[20025]: pam_unix(cron:session): session closed for user root
+2025-11-24T01:17:01.326266+00:00 utop2 CRON[20030]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T01:17:01.381772+00:00 utop2 CRON[20030]: pam_unix(cron:session): session closed for user root
+2025-11-24T01:25:01.349444+00:00 utop2 CRON[20040]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T01:25:01.392053+00:00 utop2 CRON[20040]: pam_unix(cron:session): session closed for user root
+2025-11-24T01:35:01.369888+00:00 utop2 CRON[20058]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T01:35:01.375299+00:00 utop2 CRON[20058]: pam_unix(cron:session): session closed for user root
+2025-11-24T01:45:01.387751+00:00 utop2 CRON[20078]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T01:45:01.394592+00:00 utop2 CRON[20078]: pam_unix(cron:session): session closed for user root
+2025-11-24T01:55:01.416394+00:00 utop2 CRON[20091]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T01:55:01.423122+00:00 utop2 CRON[20091]: pam_unix(cron:session): session closed for user root
+2025-11-24T02:05:01.437473+00:00 utop2 CRON[20112]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T02:05:01.489317+00:00 utop2 CRON[20112]: pam_unix(cron:session): session closed for user root
+2025-11-24T02:15:01.455863+00:00 utop2 CRON[20125]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T02:15:01.461198+00:00 utop2 CRON[20125]: pam_unix(cron:session): session closed for user root
+2025-11-24T02:17:01.470472+00:00 utop2 CRON[20129]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T02:17:01.517923+00:00 utop2 CRON[20129]: pam_unix(cron:session): session closed for user root
+2025-11-24T02:25:01.486450+00:00 utop2 CRON[20147]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T02:25:01.492299+00:00 utop2 CRON[20147]: pam_unix(cron:session): session closed for user root
+2025-11-24T02:35:01.501460+00:00 utop2 CRON[20163]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T02:35:01.506167+00:00 utop2 CRON[20163]: pam_unix(cron:session): session closed for user root
+2025-11-24T02:45:01.518583+00:00 utop2 CRON[20175]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T02:45:01.522563+00:00 utop2 CRON[20175]: pam_unix(cron:session): session closed for user root
+2025-11-24T02:55:01.537625+00:00 utop2 CRON[20203]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T02:55:01.595434+00:00 utop2 CRON[20203]: pam_unix(cron:session): session closed for user root
+2025-11-24T02:59:51.260527+00:00 utop2 pkexec: pam_unix(polkit-1:session): session opened for user root(uid=0) by ethan(uid=1000)
+2025-11-24T02:59:51.262184+00:00 utop2 pkexec[20544]: ethan: Executing command [USER=root] [TTY=unknown] [CWD=/home/ethan] [COMMAND=/usr/lib/update-notifier/package-system-locked]
+2025-11-24T03:05:01.562787+00:00 utop2 CRON[20613]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T03:05:01.572396+00:00 utop2 CRON[20613]: pam_unix(cron:session): session closed for user root
+2025-11-24T03:10:01.585905+00:00 utop2 CRON[20619]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T03:10:01.618448+00:00 utop2 CRON[20619]: pam_unix(cron:session): session closed for user root
+2025-11-24T03:15:01.606653+00:00 utop2 CRON[20632]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T03:15:01.611593+00:00 utop2 CRON[20632]: pam_unix(cron:session): session closed for user root
+2025-11-24T03:17:01.621323+00:00 utop2 CRON[20638]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T03:17:01.627047+00:00 utop2 CRON[20638]: pam_unix(cron:session): session closed for user root
+2025-11-24T03:25:01.641118+00:00 utop2 CRON[20664]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T03:25:01.649000+00:00 utop2 CRON[20664]: pam_unix(cron:session): session closed for user root
+2025-11-24T03:35:01.660401+00:00 utop2 CRON[20675]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T03:35:01.664036+00:00 utop2 CRON[20675]: pam_unix(cron:session): session closed for user root
+2025-11-24T03:45:01.678614+00:00 utop2 CRON[20687]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T03:45:01.688881+00:00 utop2 CRON[20687]: pam_unix(cron:session): session closed for user root
+2025-11-24T03:55:01.703872+00:00 utop2 CRON[20715]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T03:55:01.748369+00:00 utop2 CRON[20715]: pam_unix(cron:session): session closed for user root
+2025-11-24T04:05:01.724273+00:00 utop2 CRON[20727]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T04:05:01.732361+00:00 utop2 CRON[20727]: pam_unix(cron:session): session closed for user root
+2025-11-24T04:15:01.741067+00:00 utop2 CRON[20746]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T04:15:01.745188+00:00 utop2 CRON[20746]: pam_unix(cron:session): session closed for user root
+2025-11-24T04:17:01.759854+00:00 utop2 CRON[20750]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T04:17:01.855094+00:00 utop2 CRON[20750]: pam_unix(cron:session): session closed for user root
+2025-11-24T04:25:01.781666+00:00 utop2 CRON[20762]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T04:25:01.829095+00:00 utop2 CRON[20762]: pam_unix(cron:session): session closed for user root
+2025-11-24T04:35:01.803892+00:00 utop2 CRON[20781]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T04:35:01.813402+00:00 utop2 CRON[20781]: pam_unix(cron:session): session closed for user root
+2025-11-24T04:45:01.826665+00:00 utop2 CRON[20800]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T04:45:01.837584+00:00 utop2 CRON[20800]: pam_unix(cron:session): session closed for user root
+2025-11-24T04:55:01.851912+00:00 utop2 CRON[20813]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T04:55:01.858864+00:00 utop2 CRON[20813]: pam_unix(cron:session): session closed for user root
+2025-11-24T05:05:01.873848+00:00 utop2 CRON[20825]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T05:05:01.885268+00:00 utop2 CRON[20825]: pam_unix(cron:session): session closed for user root
+2025-11-24T05:15:01.899394+00:00 utop2 CRON[20851]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T05:15:01.907139+00:00 utop2 CRON[20851]: pam_unix(cron:session): session closed for user root
+2025-11-24T05:17:01.915453+00:00 utop2 CRON[20854]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T05:17:01.920104+00:00 utop2 CRON[20854]: pam_unix(cron:session): session closed for user root
+2025-11-24T05:25:01.930543+00:00 utop2 CRON[20866]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T05:25:01.935122+00:00 utop2 CRON[20866]: pam_unix(cron:session): session closed for user root
+2025-11-24T05:35:01.950176+00:00 utop2 CRON[20885]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T05:35:01.985608+00:00 utop2 CRON[20885]: pam_unix(cron:session): session closed for user root
+2025-11-24T05:45:01.972117+00:00 utop2 CRON[20900]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T05:45:01.976972+00:00 utop2 CRON[20900]: pam_unix(cron:session): session closed for user root
+2025-11-24T05:55:01.996401+00:00 utop2 CRON[20912]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T05:55:02.002484+00:00 utop2 CRON[20912]: pam_unix(cron:session): session closed for user root
+2025-11-24T06:05:01.021990+00:00 utop2 CRON[20976]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T06:05:01.025937+00:00 utop2 CRON[20976]: pam_unix(cron:session): session closed for user root
+2025-11-24T06:15:01.036684+00:00 utop2 CRON[20989]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T06:15:01.042298+00:00 utop2 CRON[20989]: pam_unix(cron:session): session closed for user root
+2025-11-24T06:17:01.049161+00:00 utop2 CRON[20994]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T06:17:01.085215+00:00 utop2 CRON[20994]: pam_unix(cron:session): session closed for user root
+2025-11-24T06:25:01.064772+00:00 utop2 CRON[21005]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T06:25:01.117695+00:00 utop2 CRON[21006]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T06:25:01.118606+00:00 utop2 CRON[21005]: pam_unix(cron:session): session closed for user root
+2025-11-24T06:25:01.118812+00:00 utop2 CRON[21006]: pam_unix(cron:session): session closed for user root
+2025-11-24T06:35:01.083514+00:00 utop2 CRON[21033]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T06:35:01.090398+00:00 utop2 CRON[21033]: pam_unix(cron:session): session closed for user root
+2025-11-24T06:45:01.099632+00:00 utop2 CRON[21045]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T06:45:01.105304+00:00 utop2 CRON[21045]: pam_unix(cron:session): session closed for user root
+2025-11-24T06:55:01.118455+00:00 utop2 CRON[21120]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T06:55:01.124723+00:00 utop2 CRON[21120]: pam_unix(cron:session): session closed for user root
+2025-11-24T07:05:01.133867+00:00 utop2 CRON[21141]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T07:05:01.238099+00:00 utop2 CRON[21141]: pam_unix(cron:session): session closed for user root
+2025-11-24T07:15:01.210518+00:00 utop2 CRON[21162]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T07:15:01.216177+00:00 utop2 CRON[21162]: pam_unix(cron:session): session closed for user root
+2025-11-24T07:17:01.229286+00:00 utop2 CRON[21166]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T07:17:01.340372+00:00 utop2 CRON[21166]: pam_unix(cron:session): session closed for user root
+2025-11-24T07:25:01.247904+00:00 utop2 CRON[21184]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T07:25:01.253593+00:00 utop2 CRON[21184]: pam_unix(cron:session): session closed for user root
+2025-11-24T07:30:01.268823+00:00 utop2 CRON[21189]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T07:30:01.302173+00:00 utop2 CRON[21189]: pam_unix(cron:session): session closed for user root
+2025-11-24T07:35:01.284392+00:00 utop2 CRON[21201]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T07:35:01.385277+00:00 utop2 CRON[21201]: pam_unix(cron:session): session closed for user root
+2025-11-24T07:45:01.299294+00:00 utop2 CRON[21215]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T07:45:01.302754+00:00 utop2 CRON[21215]: pam_unix(cron:session): session closed for user root
+2025-11-24T07:55:01.319274+00:00 utop2 CRON[21233]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T07:55:01.328209+00:00 utop2 CRON[21233]: pam_unix(cron:session): session closed for user root
+2025-11-24T08:05:01.339637+00:00 utop2 CRON[21246]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T08:05:01.344757+00:00 utop2 CRON[21246]: pam_unix(cron:session): session closed for user root
+2025-11-24T08:15:01.355997+00:00 utop2 CRON[21260]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T08:15:01.402373+00:00 utop2 CRON[21260]: pam_unix(cron:session): session closed for user root
+2025-11-24T08:17:01.372611+00:00 utop2 CRON[21263]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T08:17:01.378035+00:00 utop2 CRON[21263]: pam_unix(cron:session): session closed for user root
+2025-11-24T08:25:01.393289+00:00 utop2 CRON[21281]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T08:25:01.404840+00:00 utop2 CRON[21281]: pam_unix(cron:session): session closed for user root
+2025-11-24T08:30:01.425584+00:00 utop2 CRON[21285]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T08:30:01.474494+00:00 utop2 CRON[21285]: pam_unix(cron:session): session closed for user root
+2025-11-24T08:35:01.448851+00:00 utop2 CRON[21298]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T08:35:01.461710+00:00 utop2 CRON[21298]: pam_unix(cron:session): session closed for user root
+2025-11-24T08:45:01.467825+00:00 utop2 CRON[21317]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T08:45:01.471940+00:00 utop2 CRON[21317]: pam_unix(cron:session): session closed for user root
+2025-11-24T08:55:01.481539+00:00 utop2 CRON[21330]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T08:55:01.485305+00:00 utop2 CRON[21330]: pam_unix(cron:session): session closed for user root
+2025-11-24T09:05:01.497760+00:00 utop2 CRON[21400]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T09:05:01.547681+00:00 utop2 CRON[21400]: pam_unix(cron:session): session closed for user root
+2025-11-24T09:15:01.513581+00:00 utop2 CRON[21419]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T09:15:01.517722+00:00 utop2 CRON[21419]: pam_unix(cron:session): session closed for user root
+2025-11-24T09:17:01.528813+00:00 utop2 CRON[21424]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T09:17:01.572866+00:00 utop2 CRON[21424]: pam_unix(cron:session): session closed for user root
+2025-11-24T09:25:01.550367+00:00 utop2 CRON[21435]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T09:25:01.603671+00:00 utop2 CRON[21435]: pam_unix(cron:session): session closed for user root
+2025-11-24T09:30:01.568098+00:00 utop2 CRON[21439]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T09:30:01.640725+00:00 utop2 CRON[21439]: pam_unix(cron:session): session closed for user root
+2025-11-24T09:35:01.580572+00:00 utop2 CRON[21451]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T09:35:01.586075+00:00 utop2 CRON[21451]: pam_unix(cron:session): session closed for user root
+2025-11-24T09:45:01.599655+00:00 utop2 CRON[21469]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T09:45:01.609018+00:00 utop2 CRON[21469]: pam_unix(cron:session): session closed for user root
+2025-11-24T09:55:01.624786+00:00 utop2 CRON[21491]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T09:55:01.671350+00:00 utop2 CRON[21491]: pam_unix(cron:session): session closed for user root
+2025-11-24T10:05:01.648423+00:00 utop2 CRON[21503]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T10:05:01.656963+00:00 utop2 CRON[21503]: pam_unix(cron:session): session closed for user root
+2025-11-24T10:15:01.668493+00:00 utop2 CRON[21618]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T10:15:01.703624+00:00 utop2 CRON[21618]: pam_unix(cron:session): session closed for user root
+2025-11-24T10:17:01.682484+00:00 utop2 CRON[21621]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T10:17:01.686845+00:00 utop2 CRON[21621]: pam_unix(cron:session): session closed for user root
+2025-11-24T10:25:01.696687+00:00 utop2 CRON[21633]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T10:25:01.703838+00:00 utop2 CRON[21633]: pam_unix(cron:session): session closed for user root
+2025-11-24T10:30:01.713798+00:00 utop2 CRON[21638]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T10:30:01.769536+00:00 utop2 CRON[21638]: pam_unix(cron:session): session closed for user root
+2025-11-24T10:35:01.732229+00:00 utop2 CRON[21656]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T10:35:02.187446+00:00 utop2 CRON[21656]: pam_unix(cron:session): session closed for user root
+2025-11-24T10:45:01.750682+00:00 utop2 CRON[21667]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T10:45:01.758171+00:00 utop2 CRON[21667]: pam_unix(cron:session): session closed for user root
+2025-11-24T10:55:01.770189+00:00 utop2 CRON[21689]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T10:55:01.819683+00:00 utop2 CRON[21689]: pam_unix(cron:session): session closed for user root
+2025-11-24T11:05:01.788729+00:00 utop2 CRON[21707]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T11:05:01.795476+00:00 utop2 CRON[21707]: pam_unix(cron:session): session closed for user root
+2025-11-24T11:15:01.808591+00:00 utop2 CRON[21719]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T11:15:01.813807+00:00 utop2 CRON[21719]: pam_unix(cron:session): session closed for user root
+2025-11-24T11:17:01.822633+00:00 utop2 CRON[21723]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T11:17:01.874198+00:00 utop2 CRON[21723]: pam_unix(cron:session): session closed for user root
+2025-11-24T11:25:01.840999+00:00 utop2 CRON[21734]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T11:25:01.897374+00:00 utop2 CRON[21734]: pam_unix(cron:session): session closed for user root
+2025-11-24T11:30:01.860384+00:00 utop2 CRON[21745]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T11:30:02.044875+00:00 utop2 CRON[21745]: pam_unix(cron:session): session closed for user root
+2025-11-24T11:35:01.875672+00:00 utop2 CRON[21758]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T11:35:01.907151+00:00 utop2 CRON[21758]: pam_unix(cron:session): session closed for user root
+2025-11-24T11:45:01.891214+00:00 utop2 CRON[22455]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T11:45:01.895355+00:00 utop2 CRON[22455]: pam_unix(cron:session): session closed for user root
+2025-11-24T11:55:01.904072+00:00 utop2 CRON[22736]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T11:55:01.956160+00:00 utop2 CRON[22736]: pam_unix(cron:session): session closed for user root
+2025-11-24T12:05:01.924473+00:00 utop2 CRON[22878]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T12:05:01.932316+00:00 utop2 CRON[22878]: pam_unix(cron:session): session closed for user root
+2025-11-24T12:15:01.943581+00:00 utop2 CRON[22890]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T12:15:01.949194+00:00 utop2 CRON[22890]: pam_unix(cron:session): session closed for user root
+2025-11-24T12:17:01.964057+00:00 utop2 CRON[22894]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T12:17:02.002158+00:00 utop2 CRON[22894]: pam_unix(cron:session): session closed for user root
+2025-11-24T12:25:01.980560+00:00 utop2 CRON[22911]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T12:25:01.985202+00:00 utop2 CRON[22911]: pam_unix(cron:session): session closed for user root
+2025-11-24T12:30:01.999415+00:00 utop2 CRON[22917]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T12:30:02.046659+00:00 utop2 CRON[22917]: pam_unix(cron:session): session closed for user root
+2025-11-24T12:35:01.012274+00:00 utop2 CRON[22936]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T12:35:01.016078+00:00 utop2 CRON[22936]: pam_unix(cron:session): session closed for user root
+2025-11-24T12:45:01.025417+00:00 utop2 CRON[22949]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T12:45:01.030916+00:00 utop2 CRON[22949]: pam_unix(cron:session): session closed for user root
+2025-11-24T12:55:01.040434+00:00 utop2 CRON[22968]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T12:55:01.047228+00:00 utop2 CRON[22968]: pam_unix(cron:session): session closed for user root
+2025-11-24T13:05:01.058495+00:00 utop2 CRON[22987]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T13:05:01.062622+00:00 utop2 CRON[22987]: pam_unix(cron:session): session closed for user root
+2025-11-24T13:15:01.072705+00:00 utop2 CRON[23000]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T13:15:01.081328+00:00 utop2 CRON[23000]: pam_unix(cron:session): session closed for user root
+2025-11-24T13:17:01.093399+00:00 utop2 CRON[23004]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T13:17:01.162298+00:00 utop2 CRON[23004]: pam_unix(cron:session): session closed for user root
+2025-11-24T13:25:01.111852+00:00 utop2 CRON[23023]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T13:25:01.153527+00:00 utop2 CRON[23023]: pam_unix(cron:session): session closed for user root
+2025-11-24T13:30:01.137169+00:00 utop2 CRON[23027]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T13:30:01.201269+00:00 utop2 CRON[23027]: pam_unix(cron:session): session closed for user root
+2025-11-24T13:35:01.154912+00:00 utop2 CRON[23039]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T13:35:01.241159+00:00 utop2 CRON[23039]: pam_unix(cron:session): session closed for user root
+2025-11-24T13:45:01.176908+00:00 utop2 CRON[23052]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T13:45:01.183617+00:00 utop2 CRON[23052]: pam_unix(cron:session): session closed for user root
+2025-11-24T13:55:01.201913+00:00 utop2 CRON[23071]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T13:55:01.273650+00:00 utop2 CRON[23071]: pam_unix(cron:session): session closed for user root
+2025-11-24T14:05:01.227843+00:00 utop2 CRON[23092]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T14:05:01.242530+00:00 utop2 CRON[23092]: pam_unix(cron:session): session closed for user root
+2025-11-24T14:15:01.261649+00:00 utop2 CRON[23111]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T14:15:01.324064+00:00 utop2 CRON[23111]: pam_unix(cron:session): session closed for user root
+2025-11-24T14:17:01.297771+00:00 utop2 CRON[23114]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T14:17:01.306827+00:00 utop2 CRON[23114]: pam_unix(cron:session): session closed for user root
+2025-11-24T14:25:01.323084+00:00 utop2 CRON[23126]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T14:25:01.331066+00:00 utop2 CRON[23126]: pam_unix(cron:session): session closed for user root
+2025-11-24T14:30:01.345483+00:00 utop2 CRON[23132]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T14:30:01.405662+00:00 utop2 CRON[23132]: pam_unix(cron:session): session closed for user root
+2025-11-24T14:33:31.068284+00:00 utop2 gdm-password]: gkr-pam: unlocked login keyring
+2025-11-24T14:33:48.511242+00:00 utop2 sudo: pam_unix(sudo:auth): authentication failure; logname=ethan uid=1000 euid=0 tty=/dev/pts/0 ruser=ethan rhost=  user=ethan
+2025-11-24T14:33:52.734524+00:00 utop2 sudo:    ethan : TTY=pts/0 ; PWD=/home/ethan/Desktop/Sem1-2526/SDSN/Coursework/Client ; USER=root ; COMMAND=/usr/bin/apt-get install screen
+2025-11-24T14:33:52.740322+00:00 utop2 sudo: pam_unix(sudo:session): session opened for user root(uid=0) by ethan(uid=1000)
+2025-11-24T14:34:02.527415+00:00 utop2 sudo: pam_unix(sudo:session): session closed for user root
+2025-11-24T14:35:01.367921+00:00 utop2 CRON[23598]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T14:35:01.402019+00:00 utop2 CRON[23598]: pam_unix(cron:session): session closed for user root
+2025-11-24T14:35:51.081104+00:00 utop2 pkexec: pam_unix(polkit-1:session): session opened for user root(uid=0) by ethan(uid=1000)
+2025-11-24T14:35:51.147851+00:00 utop2 pkexec[23610]: ethan: Executing command [USER=root] [TTY=unknown] [CWD=/home/ethan] [COMMAND=/usr/lib/update-notifier/package-system-locked]
+2025-11-24T14:45:01.384726+00:00 utop2 CRON[23662]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T14:45:01.391050+00:00 utop2 CRON[23662]: pam_unix(cron:session): session closed for user root
+2025-11-24T14:55:01.405231+00:00 utop2 CRON[23679]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T14:55:01.414090+00:00 utop2 CRON[23679]: pam_unix(cron:session): session closed for user root
+2025-11-24T15:05:01.427164+00:00 utop2 CRON[23747]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T15:05:01.441190+00:00 utop2 CRON[23747]: pam_unix(cron:session): session closed for user root
+2025-11-24T15:15:01.462106+00:00 utop2 CRON[23777]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T15:15:01.505663+00:00 utop2 CRON[23777]: pam_unix(cron:session): session closed for user root
+2025-11-24T15:17:01.477397+00:00 utop2 CRON[23781]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T15:17:01.488187+00:00 utop2 CRON[23781]: pam_unix(cron:session): session closed for user root
+2025-11-24T15:25:01.508825+00:00 utop2 CRON[23792]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T15:25:01.517193+00:00 utop2 CRON[23792]: pam_unix(cron:session): session closed for user root
+2025-11-24T15:30:01.533664+00:00 utop2 CRON[23797]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T15:30:01.584807+00:00 utop2 CRON[23797]: pam_unix(cron:session): session closed for user root
+2025-11-24T15:35:01.549391+00:00 utop2 CRON[23808]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T15:35:01.620862+00:00 utop2 CRON[23808]: pam_unix(cron:session): session closed for user root
+2025-11-24T15:45:01.566530+00:00 utop2 CRON[23828]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T15:45:01.572578+00:00 utop2 CRON[23828]: pam_unix(cron:session): session closed for user root
+2025-11-24T15:55:01.591412+00:00 utop2 CRON[23841]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T15:55:01.598245+00:00 utop2 CRON[23841]: pam_unix(cron:session): session closed for user root
+2025-11-24T16:05:01.614386+00:00 utop2 CRON[23859]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T16:05:01.618895+00:00 utop2 CRON[23859]: pam_unix(cron:session): session closed for user root
+2025-11-24T16:15:01.638589+00:00 utop2 CRON[23872]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T16:15:01.682336+00:00 utop2 CRON[23872]: pam_unix(cron:session): session closed for user root
+2025-11-24T16:17:01.657021+00:00 utop2 CRON[23876]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T16:17:01.665145+00:00 utop2 CRON[23876]: pam_unix(cron:session): session closed for user root
+2025-11-24T16:25:01.678618+00:00 utop2 CRON[23886]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T16:25:01.684978+00:00 utop2 CRON[23886]: pam_unix(cron:session): session closed for user root
+2025-11-24T16:30:01.697151+00:00 utop2 CRON[23907]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T16:30:01.703491+00:00 utop2 CRON[23907]: pam_unix(cron:session): session closed for user root
+2025-11-24T16:35:01.713056+00:00 utop2 CRON[23917]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T16:35:01.770255+00:00 utop2 CRON[23917]: pam_unix(cron:session): session closed for user root
+2025-11-24T16:45:01.734029+00:00 utop2 CRON[23928]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T16:45:01.740290+00:00 utop2 CRON[23928]: pam_unix(cron:session): session closed for user root
+2025-11-24T16:55:01.755546+00:00 utop2 CRON[23940]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T16:55:01.762106+00:00 utop2 CRON[23940]: pam_unix(cron:session): session closed for user root
+2025-11-24T17:05:01.771296+00:00 utop2 CRON[23959]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T17:05:01.819312+00:00 utop2 CRON[23959]: pam_unix(cron:session): session closed for user root
+2025-11-24T17:15:01.794465+00:00 utop2 CRON[23972]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T17:15:01.800966+00:00 utop2 CRON[23972]: pam_unix(cron:session): session closed for user root
+2025-11-24T17:17:01.811537+00:00 utop2 CRON[23976]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T17:17:01.880611+00:00 utop2 CRON[23976]: pam_unix(cron:session): session closed for user root
+2025-11-24T17:25:01.833220+00:00 utop2 CRON[24004]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T17:25:01.838252+00:00 utop2 CRON[24004]: pam_unix(cron:session): session closed for user root
+2025-11-24T17:30:01.847917+00:00 utop2 CRON[24014]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T17:30:01.852418+00:00 utop2 CRON[24014]: pam_unix(cron:session): session closed for user root
+2025-11-24T17:35:01.865398+00:00 utop2 CRON[24020]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T17:35:01.870478+00:00 utop2 CRON[24020]: pam_unix(cron:session): session closed for user root
+2025-11-24T17:45:01.885699+00:00 utop2 CRON[24031]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T17:45:01.891844+00:00 utop2 CRON[24031]: pam_unix(cron:session): session closed for user root
+2025-11-24T17:55:01.907643+00:00 utop2 CRON[24051]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T17:55:01.917500+00:00 utop2 CRON[24051]: pam_unix(cron:session): session closed for user root
+2025-11-24T18:05:01.928459+00:00 utop2 CRON[24117]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T18:05:01.935567+00:00 utop2 CRON[24117]: pam_unix(cron:session): session closed for user root
+2025-11-24T18:15:01.949596+00:00 utop2 CRON[24140]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T18:15:01.955472+00:00 utop2 CRON[24140]: pam_unix(cron:session): session closed for user root
+2025-11-24T18:17:01.966236+00:00 utop2 CRON[24144]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T18:17:02.022125+00:00 utop2 CRON[24144]: pam_unix(cron:session): session closed for user root
+2025-11-24T18:25:01.989273+00:00 utop2 CRON[24162]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T18:25:02.053500+00:00 utop2 CRON[24162]: pam_unix(cron:session): session closed for user root
+2025-11-24T18:30:02.009328+00:00 utop2 CRON[24166]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T18:30:02.064075+00:00 utop2 CRON[24166]: pam_unix(cron:session): session closed for user root
+2025-11-24T18:35:01.023018+00:00 utop2 CRON[24179]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T18:35:01.029256+00:00 utop2 CRON[24179]: pam_unix(cron:session): session closed for user root
+2025-11-24T18:45:01.042594+00:00 utop2 CRON[24191]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T18:45:01.049689+00:00 utop2 CRON[24191]: pam_unix(cron:session): session closed for user root
+2025-11-24T18:55:01.060550+00:00 utop2 CRON[24210]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T18:55:01.122522+00:00 utop2 CRON[24210]: pam_unix(cron:session): session closed for user root
+2025-11-24T19:05:01.076472+00:00 utop2 CRON[24222]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T19:05:01.082043+00:00 utop2 CRON[24222]: pam_unix(cron:session): session closed for user root
+2025-11-24T19:15:01.092605+00:00 utop2 CRON[24240]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T19:15:01.099251+00:00 utop2 CRON[24240]: pam_unix(cron:session): session closed for user root
+2025-11-24T19:17:01.106489+00:00 utop2 CRON[24244]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T19:17:01.161479+00:00 utop2 CRON[24244]: pam_unix(cron:session): session closed for user root
+2025-11-24T19:25:01.123431+00:00 utop2 CRON[24255]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T19:25:01.172884+00:00 utop2 CRON[24255]: pam_unix(cron:session): session closed for user root
+2025-11-24T19:30:01.136601+00:00 utop2 CRON[24259]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T19:30:01.225195+00:00 utop2 CRON[24259]: pam_unix(cron:session): session closed for user root
+2025-11-24T19:35:01.152366+00:00 utop2 CRON[24273]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T19:35:01.216039+00:00 utop2 CRON[24273]: pam_unix(cron:session): session closed for user root
+2025-11-24T19:45:01.172038+00:00 utop2 CRON[24292]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T19:45:01.177645+00:00 utop2 CRON[24292]: pam_unix(cron:session): session closed for user root
+2025-11-24T19:55:01.191847+00:00 utop2 CRON[24303]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T19:55:01.197554+00:00 utop2 CRON[24303]: pam_unix(cron:session): session closed for user root
+2025-11-24T20:05:01.212655+00:00 utop2 CRON[24325]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T20:05:01.269235+00:00 utop2 CRON[24325]: pam_unix(cron:session): session closed for user root
+2025-11-24T20:15:01.238467+00:00 utop2 CRON[24351]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T20:15:01.244065+00:00 utop2 CRON[24351]: pam_unix(cron:session): session closed for user root
+2025-11-24T20:17:01.256686+00:00 utop2 CRON[24355]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T20:17:01.375890+00:00 utop2 CRON[24355]: pam_unix(cron:session): session closed for user root
+2025-11-24T20:25:01.276208+00:00 utop2 CRON[24366]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T20:25:01.362675+00:00 utop2 CRON[24366]: pam_unix(cron:session): session closed for user root
+2025-11-24T20:30:01.299936+00:00 utop2 CRON[24370]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T20:30:01.376858+00:00 utop2 CRON[24370]: pam_unix(cron:session): session closed for user root
+2025-11-24T20:35:01.318280+00:00 utop2 CRON[24382]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T20:35:01.324317+00:00 utop2 CRON[24382]: pam_unix(cron:session): session closed for user root
+2025-11-24T20:45:01.337798+00:00 utop2 CRON[24402]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T20:45:01.344302+00:00 utop2 CRON[24402]: pam_unix(cron:session): session closed for user root
+2025-11-24T20:55:01.364327+00:00 utop2 CRON[24415]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T20:55:01.373272+00:00 utop2 CRON[24415]: pam_unix(cron:session): session closed for user root
+2025-11-24T21:05:01.384563+00:00 utop2 CRON[24488]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T21:05:01.394147+00:00 utop2 CRON[24488]: pam_unix(cron:session): session closed for user root
+2025-11-24T21:15:01.410619+00:00 utop2 CRON[24500]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T21:15:01.417283+00:00 utop2 CRON[24500]: pam_unix(cron:session): session closed for user root
+2025-11-24T21:17:01.427353+00:00 utop2 CRON[24505]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T21:17:01.479653+00:00 utop2 CRON[24505]: pam_unix(cron:session): session closed for user root
+2025-11-24T21:25:01.451547+00:00 utop2 CRON[24518]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T21:25:01.508097+00:00 utop2 CRON[24518]: pam_unix(cron:session): session closed for user root
+2025-11-24T21:30:01.469344+00:00 utop2 CRON[24521]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T21:30:01.479912+00:00 utop2 CRON[24521]: pam_unix(cron:session): session closed for user root
+2025-11-24T21:35:01.492825+00:00 utop2 CRON[24548]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T21:35:01.572226+00:00 utop2 CRON[24548]: pam_unix(cron:session): session closed for user root
+2025-11-24T21:45:01.508591+00:00 utop2 CRON[24561]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T21:45:01.610085+00:00 utop2 CRON[24561]: pam_unix(cron:session): session closed for user root
+2025-11-24T21:55:01.526358+00:00 utop2 CRON[24573]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T21:55:01.530363+00:00 utop2 CRON[24573]: pam_unix(cron:session): session closed for user root
+2025-11-24T22:05:01.544524+00:00 utop2 CRON[24593]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T22:05:01.595602+00:00 utop2 CRON[24593]: pam_unix(cron:session): session closed for user root
+2025-11-24T22:12:11.517117+00:00 utop2 gdm-password]: gkr-pam: unlocked login keyring
+2025-11-24T22:15:01.573180+00:00 utop2 CRON[24759]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T22:15:01.580095+00:00 utop2 CRON[24759]: pam_unix(cron:session): session closed for user root
+2025-11-24T22:17:01.589377+00:00 utop2 CRON[24764]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T22:17:01.640556+00:00 utop2 CRON[24764]: pam_unix(cron:session): session closed for user root
+2025-11-24T22:24:24.139147+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): conversation failed
+2025-11-24T22:24:33.161691+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): conversation failed
+2025-11-24T22:24:33.162623+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): auth could not identify password for [ethan]
+2025-11-24T22:24:33.915341+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): conversation failed
+2025-11-24T22:24:33.915610+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): auth could not identify password for [ethan]
+2025-11-24T22:24:34.086317+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): conversation failed
+2025-11-24T22:24:34.088528+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): auth could not identify password for [ethan]
+2025-11-24T22:24:34.522018+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): conversation failed
+2025-11-24T22:24:34.522792+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): auth could not identify password for [ethan]
+2025-11-24T22:24:35.309234+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): conversation failed
+2025-11-24T22:24:35.310290+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): auth could not identify password for [ethan]
+2025-11-24T22:24:35.603403+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): conversation failed
+2025-11-24T22:24:35.603679+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): auth could not identify password for [ethan]
+2025-11-24T22:24:36.477118+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): conversation failed
+2025-11-24T22:24:36.477597+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): auth could not identify password for [ethan]
+2025-11-24T22:25:01.606680+00:00 utop2 CRON[24971]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T22:25:01.613321+00:00 utop2 CRON[24971]: pam_unix(cron:session): session closed for user root
+2025-11-24T22:25:07.992474+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): conversation failed
+2025-11-24T22:25:07.994757+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): auth could not identify password for [ethan]
+2025-11-24T22:25:14.533339+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): conversation failed
+2025-11-24T22:25:14.533504+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): auth could not identify password for [ethan]
+2025-11-24T22:25:14.892372+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): conversation failed
+2025-11-24T22:25:14.892606+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): auth could not identify password for [ethan]
+2025-11-24T22:25:15.163035+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): conversation failed
+2025-11-24T22:25:15.163862+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): auth could not identify password for [ethan]
+2025-11-24T22:25:15.438497+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): conversation failed
+2025-11-24T22:25:15.438656+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): auth could not identify password for [ethan]
+2025-11-24T22:25:46.656026+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): conversation failed
+2025-11-24T22:25:46.656594+00:00 utop2 gdm-password]: pam_unix(gdm-password:auth): auth could not identify password for [ethan]
+2025-11-24T22:25:55.299752+00:00 utop2 gdm-password]: gkr-pam: unlocked login keyring

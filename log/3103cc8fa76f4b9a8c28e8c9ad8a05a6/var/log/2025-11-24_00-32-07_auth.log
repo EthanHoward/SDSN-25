@@ -1,0 +1,11 @@
+2025-11-24T00:11:51.356585+00:00 utop2 pkexec: pam_unix(polkit-1:session): session opened for user root(uid=0) by ethan(uid=1000)
+2025-11-24T00:11:51.357364+00:00 utop2 pkexec[7779]: ethan: Executing command [USER=root] [TTY=unknown] [CWD=/home/ethan] [COMMAND=/usr/lib/update-notifier/package-system-locked]
+2025-11-24T00:14:51.177557+00:00 utop2 pkexec: pam_unix(polkit-1:session): session opened for user root(uid=0) by ethan(uid=1000)
+2025-11-24T00:14:51.400494+00:00 utop2 pkexec[19697]: ethan: Executing command [USER=root] [TTY=unknown] [CWD=/home/ethan] [COMMAND=/usr/lib/update-notifier/package-system-locked]
+2025-11-24T00:15:01.144517+00:00 utop2 CRON[19707]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T00:15:01.150004+00:00 utop2 CRON[19707]: pam_unix(cron:session): session closed for user root
+2025-11-24T00:17:01.159601+00:00 utop2 CRON[19785]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T00:17:01.165818+00:00 utop2 CRON[19785]: pam_unix(cron:session): session closed for user root
+2025-11-24T00:18:53.209930+00:00 utop2 dbus-daemon[920]: [system] Failed to activate service 'org.bluez': timed out (service_start_timeout=25000ms)
+2025-11-24T00:25:01.174342+00:00 utop2 CRON[19916]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-11-24T00:25:01.232345+00:00 utop2 CRON[19916]: pam_unix(cron:session): session closed for user root

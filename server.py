@@ -1,12 +1,21 @@
+#!/bin/python3
 import os
 import sys
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import AES, PKCS1_OAEP
-from Crypto.Hash import SHA256
-from Crypto.Signature import pss
+import gzip
+import time
 import base64
 import socket
+import threading
+import itertools
 import configparser
+from pathlib import Path
+from datetime import datetime
+from dataclasses import dataclass
+from Crypto.Hash import SHA512
+from Crypto.PublicKey import RSA
+from Crypto.Signature import pss
+from Crypto.Cipher import AES, PKCS1_OAEP
+
 
 config = configparser.ConfigParser()
 config.read("server_config.ini")
@@ -14,17 +23,31 @@ config.read("server_config.ini")
 # Where this server should bind, defaults to 0.0.0.0:19385
 SERVER_HOST = config['server']['host']
 SERVER_PORT = int(config['server']['port'])
+LOG_SAVE_PATH = config['server']['log_save_path']
+TIME_TO_REQUEST_LOGS = config['server']['time_to_request_logs']
 
 # Crypto settings, clients and servers must match
 CRYPTO_RSA_KEYSIZE = int(config['crypto']['rsa_keysize'])
 CRYPTO_AES_KEYSIZE = int(config['crypto']['aes_keysize'])
 
 # Path of the server's keys.
-PUB_PATH = os.path.join(os.getcwd(), "server_rsa_public_key.pem")
-PRIV_PATH = os.path.join(os.getcwd(), "server_rsa_private_key.pem")
+KEY_DIRECTORY = Path(config['crypto']['key_directory']).resolve()
 
+INTEGER_SIZE = 32
+CHUNK_SIZE = 4096
+
+
+client_machines_info = {}
+
+@dataclass
+class ClientInfo:
+    id: str
+    ip: str
+    port: int    
+    last_seen: float = 0.0
+    
 # ------------------------------------------------------- #
-# Keygen
+# Key Management
 # ------------------------------------------------------- #
 def generate_rsa_keypair(bits=2048):
     key = RSA.generate(bits)
@@ -37,43 +60,51 @@ def generate_aes_key(bits=256):
     return os.urandom(int(bits/8))
 
 
-def load_or_generate_keys(keysize):
-    pub_exists = os.path.exists(PUB_PATH) and os.path.getsize(PUB_PATH) > 0
-    priv_exists = os.path.exists(PRIV_PATH) and os.path.getsize(PRIV_PATH) > 0
+def load_or_generate_keys(keysize: int, key_directory: str):
+    key_dir = Path(key_directory).resolve()
+    key_dir.mkdir(parents=True, exist_ok=True)
+
+    pub_path = key_dir /  "server_rsa_public_key.pem"
+    priv_path = key_dir / "server_rsa_private_key.pem"
+
+    pub_exists = pub_path.exists() and pub_path.stat().st_size > 0
+    priv_exists = priv_path.exists() and priv_path.stat().st_size > 0
 
     if pub_exists and priv_exists:
-        print(f"Loading RSA Keys...")
-        with open(PUB_PATH, "rb") as f:
-            rsa_public_key = RSA.import_key(f.read())
-        with open(PRIV_PATH, "rb") as f:
-            rsa_private_key = RSA.import_key(f.read())
+        print("[CRYPTO] Loading RSA Keys...")
+        rsa_public_key = load_rsa_key(pub_path)
+        rsa_private_key = load_rsa_key(priv_path)
         return rsa_public_key, rsa_private_key
-    
-    print("Generated new RSA keys")
+
+    print("[CRYPTO] Generating new RSA keys...")
     key = RSA.generate(keysize)
     rsa_private_key = key
     rsa_public_key = key.publickey()
 
     # write to disk
-    with open(PUB_PATH, "wb") as f:
+    with open(pub_path, "wb") as f:
         f.write(rsa_public_key.export_key())
-    with open(PRIV_PATH, "wb") as f:
+    with open(priv_path, "wb") as f:
         f.write(rsa_private_key.export_key())
 
     return rsa_public_key, rsa_private_key
 
+def load_rsa_key(filename: str):
+    path = KEY_DIRECTORY / filename
+    with open(path, "rb") as f:
+        return RSA.import_key(f.read())
 
 # ------------------------------------------------------- #
-# AES-GCM 
+# AES-GCM
 # ------------------------------------------------------- #
 def aes_encrypt(key, plaintext: bytes):
     cipher = AES.new(key, AES.MODE_GCM)
     ciphertext, tag = cipher.encrypt_and_digest(plaintext)
-    
+
     return {
-        "nonce": base64.b64encode(cipher.nonce).decode(),
-        "ciphertext": base64.b64encode(ciphertext).decode(),
-        "tag": base64.b64encode(tag).decode()
+        "nonce": base64.b64encode(cipher.nonce),
+        "ciphertext": base64.b64encode(ciphertext),
+        "tag": base64.b64encode(tag)
     }
 
 
@@ -81,14 +112,15 @@ def aes_decrypt(key, encrypted_data: dict):
     nonce = base64.b64decode(encrypted_data["nonce"])
     ciphertext = base64.b64decode(encrypted_data["ciphertext"])
     tag = base64.b64decode(encrypted_data["tag"])
-    
-    cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+
+    cipher = AES.new(key, AES.MODE_GCM, nonce)
     return cipher.decrypt_and_verify(ciphertext, tag)
 
 
 # ------------------------------------------------------- #
-# RSA Encryption and Decryption
+# RSA
 # ------------------------------------------------------- #
+
 def rsa_encrypt(public_key, data: bytes) -> bytes:
     cipher = PKCS1_OAEP.new(public_key)
     return cipher.encrypt(data)
@@ -97,84 +129,413 @@ def rsa_decrypt(private_key, data: bytes) -> bytes:
     cipher = PKCS1_OAEP.new(private_key)
     return cipher.decrypt(data)
 
-
-# ------------------------------------------------------- #
-# RSA Signing
-# ------------------------------------------------------- #
-def generate_rsa_pss_signature(private_key_bytes, message: bytes) -> bytes:
-    private_key = RSA.import_key(private_key_bytes)
-    h = SHA256.new(message)
-    signature = pss.new(private_key).sign(h)
+def generate_rsa_pss_signature(rsa_private_key: RSA.RsaKey, message: bytes) -> bytes:
+    h = SHA512.new(message)
+    signature = pss.new(rsa_private_key).sign(h)
     return signature
 
-def verify_rsa_pss_signature(public_key_bytes, message: bytes, signature: bytes) -> bool:
-    public_key = RSA.import_key(public_key_bytes)
-    h = SHA256.new(message)
+def verify_rsa_pss_signature(rsa_public_key: RSA.RsaKey, message: bytes, signature: bytes) -> bool:
+    h = SHA512.new(message)
     try:
-        pss.new(public_key).verify(h, signature)
+        pss.new(rsa_public_key).verify(h, signature)
         return True
     except (ValueError, TypeError):
         return False
-    
+
+# ------------------------------------------------------ #
+# Log Magic
+# ------------------------------------------------------ #
+
+def recv_log(connection, aes_key, client_rsa_public_key):
+    dec_pth, lench_pth = recv_aes_encrypted(connection, aes_key, client_rsa_public_key)
+    dec_log, lench_log = recv_aes_encrypted(connection, aes_key, client_rsa_public_key)
+
+    degz_pth = gzip.decompress(dec_pth)
+    degz_log = gzip.decompress(dec_log)
+
+    b64d_pth = base64.b64decode(degz_pth.decode("UTF-8")).decode("UTF-8")
+    b64d_log = base64.b64decode(degz_log.decode("UTF-8")).decode("UTF-8")
+
+    print(f"[NETWORK] Recv log {b64d_pth} ({lench_pth}) with chunks {lench_log}")
 
 
-rsa_public_key, rsa_private_key = load_or_generate_keys(CRYPTO_RSA_KEYSIZE)
+    return b64d_pth, b64d_log
+
+def save_log(machine_id, log_path, log_data) -> None:
+    cfg_logpath = Path(LOG_SAVE_PATH).resolve()
+    cli_path = Path(log_path)
+
+    if cli_path.is_absolute():
+        cli_path = cli_path.relative_to(cli_path.anchor)
+
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+    dirs = cli_path.parent
+    filename = cli_path.name
+
+    safe_base = cfg_logpath / machine_id
+    full_path = safe_base / dirs / f"{timestamp}_{filename}"
+
+    full_path = full_path.resolve()
+
+    if cfg_logpath not in full_path.parents:
+        raise ValueError(f"Unsafe log path provided (Path Traversal) {cfg_logpath} not in '{full_path}'")
+
+    full_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(full_path, "w") as f:
+        print(f"[FS] Saving log to {full_path}")
+        f.write(log_data)
 
 
-print(f"RSA Private Key: {rsa_private_key}")
-print(f"RSA Public Key: {rsa_public_key}")
+# ------------------------------------------------------ #
+# Chunk Data Recv
+# ------------------------------------------------------ #
 
-def handle_client_request(connection: socket, address) -> bool:
-    code = connection.recv(53)
-    
-    if code != b"ClientHandshakeBegin":
-        print(f"Connection From {address} refused, incorrect opening bits '{code}")
-        connection.close()
-        return False
-    
-    print(f"Connection from {address} accepted")
-    
+def recv_exact(sock, n):
+    data = b''
+    while len(data) < n:
+        chunk = sock.recv(n - len(data))
+        if not chunk:
+            raise ConnectionResetError("Connection closed while receiving chunk")
+        data += chunk
+    return data
+
+
+def recv_chunked(connection: socket.socket):
+    chunk_count = recv_int(connection)
+    chunks = []
+
+    for _ in range(chunk_count):
+        chunk_index = recv_int(connection)
+        chunk_length = recv_int(connection)
+
+        # IMPORTANT: Read *exactly* chunk_length bytes
+        chunk_data = recv_exact(connection, chunk_length)
+
+        chunks.append(chunk_data)
+
+        # ACK
+        connection.send(b'2')
+
+    return b"".join(chunks), chunk_count
+
+
+# ------------------------------------------------------- #
+# Helpers
+# ------------------------------------------------------- #
+
+def recv_int(connection: socket.socket, size: int = INTEGER_SIZE) -> int:
+    return int.from_bytes(connection.recv(size), 'big')
+
+def send_int(connection: socket.socket, value: int, size: int = INTEGER_SIZE) -> None:
+    connection.sendall(value.to_bytes(size, 'big'))
+
+def recv_fixed_width(sock: socket.socket, width: int) -> bytes:
+    buf = b''
+    while len(buf) < width:
+        chunk = sock.recv(width - len(buf))
+        if not chunk:
+            raise ConnectionError("Socket closed during fixed-width receive")
+        buf += chunk
+    return buf.rstrip(b'\x00')
+
+def send_fixed_width(sock: socket.socket, data: bytes, width: int):
+    if len(data) > width:
+        raise ValueError("Data too long for fixed-width field")
+    padded = data.ljust(width, b'\x00')
+    sock.sendall(padded)
+
+def recv_aes_encrypted(connection, aes_key, client_rsa_public_key: RSA.RsaKey | None = None):
+    data_nonce_sz      = recv_int(connection)
+    data_ciphertext_sz = recv_int(connection)
+    data_tag_sz        = recv_int(connection)
+
+    data_enc_bytes, data_lenchunks = recv_chunked(connection)
+
+    data_dec_bytes = aes_decrypt(aes_key, {
+        "nonce":      data_enc_bytes[:data_nonce_sz],
+        "ciphertext": data_enc_bytes[data_nonce_sz:data_nonce_sz + data_ciphertext_sz],
+        "tag":        data_enc_bytes[-data_tag_sz:]
+    })
+
+    if client_rsa_public_key is not None:
+        sign_nonce_sz      = recv_int(connection)
+        sign_ciphertext_sz = recv_int(connection)
+        sign_tag_sz        = recv_int(connection)
+
+        sign_enc_bytes, sign_lenchunks = recv_chunked(connection)
+        sign_dec_bytes = aes_decrypt(aes_key, {
+            "nonce":      sign_enc_bytes[:sign_nonce_sz],
+            "ciphertext": sign_enc_bytes[sign_nonce_sz:sign_nonce_sz + sign_ciphertext_sz],
+            "tag":        sign_enc_bytes[-sign_tag_sz:]
+        })
+
+        sign_verify_result = verify_rsa_pss_signature(client_rsa_public_key, data_dec_bytes, sign_dec_bytes)
+
+        if not sign_verify_result:
+            raise Exception("Sign Verification Failed") 
+
+    return data_dec_bytes, data_lenchunks
+
+def recv_unchunked_aes_encrypted(connection, aes_key, client_rsa_public_key: RSA.RsaKey | None = None):
+    nonce_sz      = recv_int(connection)
+    ciphertext_sz = recv_int(connection)
+    tag_sz        = recv_int(connection)
+
+    data_enc_bytes = connection.recv(nonce_sz+ciphertext_sz+tag_sz)
+    data_dec_bytes = aes_decrypt(aes_key, {
+        "nonce":      data_enc_bytes[:nonce_sz],
+        "ciphertext": data_enc_bytes[nonce_sz:nonce_sz + ciphertext_sz],
+        "tag":        data_enc_bytes[-tag_sz:]
+    })
+
+    if client_rsa_public_key is not None:
+        sign_nonce_sz      = recv_int(connection)
+        sign_ciphertext_sz = recv_int(connection)
+        sign_tag_sz        = recv_int(connection)
+
+        sign_enc_bytes, sign_lenchunks = recv_chunked(connection)
+        sign_dec_bytes = aes_decrypt(aes_key, {
+            "nonce":      sign_enc_bytes[:sign_nonce_sz],
+            "ciphertext": sign_enc_bytes[sign_nonce_sz:sign_nonce_sz + sign_ciphertext_sz],
+            "tag":        sign_enc_bytes[-sign_tag_sz:]
+        })
+
+        sign_verify_result = verify_rsa_pss_signature(client_rsa_public_key, data_dec_bytes, sign_dec_bytes)
+
+        if not sign_verify_result:
+            raise Exception("Sign Verification Failed")
+
+    return data_dec_bytes
+
+# ------------------------------------------------------- #
+# Main Subroutine
+# ------------------------------------------------------- #
+
+rsa_public_key, rsa_private_key = load_or_generate_keys(CRYPTO_RSA_KEYSIZE, KEY_DIRECTORY)
+
+print(f"[CRYPTO] Loaded {rsa_private_key}")
+print(f"[CRYPTO] Loaded {rsa_public_key}")
+
+def handle_client_request(connection: socket.socket, address) -> bool:
+
+    print(f"[NETWORK] Connection from {address} accepted")
+
     client_aes_key_enc_bytes = connection.recv(CRYPTO_AES_KEYSIZE)
-    
     client_aes_key = rsa_decrypt(rsa_private_key, client_aes_key_enc_bytes)
-    
-    print(f"Client AES key: {client_aes_key}")
-    
 
-    # Now we expect the client to send a number of files
-    logfile_count = int.from_bytes(connection.recv(28))
-    
-    print(f"Client sending {logfile_count} log files")
-    
-    compressed_logfiles = []
-    
-    #! PROBLEM: Server recv '0' from cli, although correctly enc-ed ??? wtf
-    for i in range(0, logfile_count):
-        clog_sz = int.from_bytes(connection.recv(28), "big")
-        print(f"Log file {i+1} is {clog_sz} in size")
-        pass
+    print(f"[CRYPTO] Client AES key (HEX): 0x{client_aes_key.hex().upper()}")
+
+    # Recv machine_id
+    machine_id = recv_unchunked_aes_encrypted(connection, client_aes_key).decode("UTF-8")
+    print(f"[NETWORK] Recv MachineID {machine_id}")
+
+    client_rsa_public_key = load_rsa_key(f"client_{machine_id}_rsa_public_key.pem")
+
+    code = recv_fixed_width(connection, 30)
+    if code == b'NegotiateReverseConnection':
+        client_port = recv_int(connection)
+
+        client_machines_info[machine_id] = ClientInfo(machine_id, connection.getpeername()[0], client_port,time.time())
+
+        connection.shutdown(socket.SHUT_WR)
+        connection.close()
+        return
+
+    if code == b'SendLogsBegin':
+        logfile_count = recv_int(connection)
+        print(f"[NETWORK] Client sending {logfile_count} log files")
+        try:
+            for i in range(0, logfile_count):
+                log_path, log_data = recv_log(connection, client_aes_key, client_rsa_public_key)
+                save_log(machine_id, log_path, log_data)
+        except Exception as e:
+            if str(e) == "Sign Verification Failed":
+                print(f"[CRYPTO] Client {machine_id} failed sending log '{str(e)}'")
+                connection.shutdown(socket.SHUT_WR)
+                connection.close()
+        return
+
+    connection.shutdown(socket.SHUT_WR)
     connection.close()
-    
-def listen():
-    print(f"Listening @ {SERVER_HOST}:{SERVER_PORT}, RSA_KS: {CRYPTO_RSA_KEYSIZE}")
-    while True:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind((SERVER_HOST, SERVER_PORT))
-        sock.listen(1)
-        print("Waiting for connections...")
-        connection, address = sock.accept()
-        handle_client_request(connection, address)
-        
 
-if __name__ == "__main__":
+def cli_machines():
+    print(f"[CLI] | {"machine-id".ljust(32, ' ')} | {"IP".ljust(15, ' ')} | {"PORT".ljust(5, ' ')} |")
+    print(f"[CLI] +-{"".ljust(32, '-')}-+-{"".ljust(15, '-')}-+-{"".ljust(5, '-')}-+")
+    for id, info in list(client_machines_info.items()):
+        print(f"[CLI] | {str(info.id).ljust(32, ' ')} | {str(info.ip).ljust(15, ' ')} | {str(info.port).ljust(5, ' ')} |")
+
+def cli_renegotiate(cmd):
+    cmd_parts = cmd.strip(" ").split(" ")
+    if len(cmd_parts) != 2:
+        print("[CLI] Usage: renegotiate <machine-id>")
+        return
+
+    machine_id = cmd_parts[1]
+
+    client = None
+    for id, info in list(client_machines_info.items()):
+        if id == machine_id:
+            client = info
+
+    if client == None:
+        print(f"[CLI] Client '{machine_id}' not found")
+        return
+
+    print(f"[NETWORK] Connecting to client {client.id} via {client.ip}:{client.port}")
+
+    connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    connection.connect((client.ip, client.port))
+
+    send_fixed_width(connection, b'RenegotiateConnection', 30)
+
+    client_machines_info[client.id] = None
+
+def send_logs(client):
+    print(f"[NETWORK] Sending renegotiate to client {client.id} via {client.ip}:{client.port}")
+
+    connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    connection.connect((client.ip, client.port))
+
+    send_fixed_width(connection, b'SendLogs', 30)
+
+    client_machines_info[client.id] = None
+
+# Force sends a given client's logs if it can 'force_send <machine-id'
+def cli_force_send(cmd):
+    cmd_parts = cmd.strip(" ").split(" ")
+    if len(cmd_parts) != 2:
+        print("[CLI] Usage: force_send <machine-id>")
+        return
+
+    machine_id = cmd_parts[1]
+
+    client = None
+    for id, info in list(client_machines_info.items()):
+        if id == machine_id:
+            client = info
+
+    if client == None:
+        print(f"[CLI] Client '{machine_id}' not found")
+        return
+
+    send_logs(client)
+
+# Force Sends all client logs 'fsa'
+def cli_fsa():
+    for id, _ in list(client_machines_info.items()):
+        cli_force_send(f"force_send {id}")
+    return
+
+# Gets info from ip 'whois A.B.C.D'
+def cli_whois(cmd):
+    cmd_parts = cmd.strip(" ").split(" ")
+    if len(cmd_parts) != 2:
+        print("[CLI] Usage: whois <ip>")
+        return
+
+    ip = cmd_parts[1]
+    for id, info in list(client_machines_info.items()):
+        if info.ip == ip:
+            print(f"[CLI] | {"machine-id".ljust(32, ' ')} | {"IP".ljust(15, ' ')} | {"PORT".ljust(5, ' ')} |")
+            print(f"[CLI] +-{"".ljust(32, '-')}-+-{"".ljust(15, '-')}-+-{"".ljust(5, '-')}-+")
+            print(f"[CLI] | {str(info.id).ljust(32, ' ')} | {str(info.ip).ljust(15, ' ')} | {str(info.port).ljust(5, ' ')} |")
+            return
+    print ("[CLI] No machine found with that IP and PORT")
+    pass
+
+def cli_exit():
+    for id, info in list(client_machines_info.items()):    
+        cli_renegotiate(f"renegotiate {id}")
+
+    print("[SERVER] Shutting Down")
+    exit()
+
+def command_line_interface():
     try:
-        listen()
-    except:
-        exit()
-        
-"""
-    Auth Decisions
-    RAW data will be hashed and that hash is used to generate a hash, the hash is appended to the raw data and it is all encrypted with aes256
-    
-"""
+        print("[CLI] Input '?' or 'help' to list commands")
+        while True:
+            cmd = input("[CLI]>").strip().lower()
+            match cmd:
+                case '?' | 'help':
+                    print("[CLI] Listing Commands")
+                    print("[CLI] 'machines' - lists info of machines currently stored in the database")
+                    print("[CLI] 'renegotiate <machine-id>' - Disconnects the provided machine based on its machine-id, this causes the machine to renegotiate reverse connection")
+                    print("[CLI] 'force_send <machine-id>' - Forces the provided machine to send logs, based on machine-id")
+                    print("[CLI] 'fsa' - Force-Sends all ")
+                    print("[CLI] 'whois <ip>' - Lists the machine-id of the provided details")
+                    print("[CLI] 'exit' - Closes the server down and disconnects all clients")
+                case _ if cmd.startswith("machines"):
+                    cli_machines()
+                    continue
+                case _ if cmd.startswith("renegotiate"):
+                    cli_renegotiate(cmd)
+                    continue
+                case _ if cmd.startswith("force_send"):
+                    # Tell the client to send logs via its reverse_listener plus need to authenticate/verify admin
+                    cli_force_send(cmd)
+                    continue
+                case _ if cmd.startswith("fsa"):
+                    cli_fsa()
+                    continue
+                case _ if cmd.startswith("whois"):
+                    cli_whois(cmd)
+                    continue
+                case _ if cmd.startswith("exit"):
+                    cli_exit()
+                case _:
+                    continue
+    except KeyboardInterrupt:
+        cli_exit()
 
+def scheduler():
+    print(f"[SCHED] Scheduler Thread Started, Log Request Time is '{TIME_TO_REQUEST_LOGS}'")
+    while True:
+        ct = datetime.now()
+        if ct.strftime('%H:%M:%S') == TIME_TO_REQUEST_LOGS:
+            print(f"[SCHED] Requesting Logs Now '{ct.strftime('%H:%M:%S')}'")
+            for id, info in list(client_machines_info.items()):
+                send_logs(info)
+
+
+        time.sleep(1)
+    pass
+
+def listen():
+    print(f"[NETWORK] Listening @ {SERVER_HOST}:{SERVER_PORT}, RSA_KS: {CRYPTO_RSA_KEYSIZE}")
+
+    connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    connection.bind((SERVER_HOST, SERVER_PORT))
+    connection.listen(10)
+
+    while True:
+        print("[NETWORK] Waiting for connections...")
+        sock, address = connection.accept()
+
+        client_thread = threading.Thread(target=handle_client_request, args=(sock, address))
+        client_thread.start()
+
+def main_subroutine():
+    # Disable buffering for print output, to make logging a bit less chaotic and mis-ordered
+    sys.stdout.reconfigure(write_through=True)
+
+    # Start listener thread
+    listener_thread = threading.Thread(target=listen, daemon=True)
+    listener_thread.start()
+
+    # Start scheduler thread
+    scheduler_thread = threading.Thread(target=scheduler, daemon=True)
+    scheduler_thread.start()
+    # Sleep so the listener can fully set up before cli is running
+    time.sleep(0.2)
+
+    command_line_interface()
+
+# No try-catch here as we want to know WHY the application exits.
+if __name__ == "__main__":
+    main_subroutine()
+
+# TODO:
+# ! Scheduler Thread Is Implemented but not tested for more than one client, awaiting tests. I think it will face an issue, may need to lock the threads or use a mutex for recv logs.

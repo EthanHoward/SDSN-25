@@ -1,0 +1,375 @@
+#!/bin/python3
+import time
+import gzip
+import socket
+import itertools
+import sys
+import os
+import base64
+import configparser
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import AES, PKCS1_OAEP
+from Crypto.Hash import SHA512
+from Crypto.Signature import pss
+from pathlib import Path
+
+config = configparser.ConfigParser()
+config.read("client_config.ini")
+
+# These are of the target server to connect to 
+SERVER_HOST = config['server']['host']
+SERVER_PORT = int(config['server']['port'])
+
+# Crypto settings, clients and servers must match
+CRYPTO_RSA_KEYSIZE = int(config['crypto']['rsa_keysize'])
+CRYPTO_AES_KEYSIZE = int(config['crypto']['aes_keysize'])
+
+# Path of the client's keys and the public of the server (to facilitate the AES key securely from the server, while allowing ephemeral client keys.).
+KEY_DIRECTORY = Path(config['crypto']['key_directory']).resolve()
+SERVER_PUB_PATH = os.path.join(os.getcwd(), "server_rsa_public_key.pem")
+
+TARGET_LOG_FILES_TO_SEND = ["/var/log/syslog", "/var/log/auth.log", "/var/log/ufw.log", "/var/log/dpkg.log"]
+
+INTEGER_SIZE = 32
+CHUNK_SIZE = 4096
+
+# Ensure Key directory actually exists...
+KEY_DIRECTORY.mkdir(parents=True, exist_ok=True)
+
+# ------------------------------------------------------- #
+# Key Management
+# ------------------------------------------------------- #
+def generate_rsa_keypair(bits=2048):
+    key = RSA.generate(bits)
+    private_key = key.export_key()
+    public_key = key.publickey().export_key()
+    return public_key, private_key
+
+
+def generate_aes_key(bits=256):
+    return os.urandom(int(bits/8))
+
+def load_or_generate_keys(keysize: int, key_directory: str):
+    key_dir = Path(key_directory).resolve()
+    key_dir.mkdir(parents=True, exist_ok=True) 
+    
+    pub_path = key_dir /  f"client_{read_machine_id()}_rsa_public_key.pem"
+    priv_path = key_dir / f"client_{read_machine_id()}_rsa_private_key.pem"
+
+    pub_exists = pub_path.exists() and pub_path.stat().st_size > 0
+    priv_exists = priv_path.exists() and priv_path.stat().st_size > 0
+
+    if pub_exists and priv_exists:
+        print("[CRYPTO] Loading RSA Keys...")
+        rsa_public_key = load_rsa_key(pub_path)
+        rsa_private_key = load_rsa_key(priv_path)
+        return rsa_public_key, rsa_private_key
+
+    print("[CRYPTO] Generating new RSA keys...")
+    key = RSA.generate(keysize)
+    rsa_private_key = key
+    rsa_public_key = key.publickey()
+
+    # write to disk
+    with open(pub_path, "wb") as f:
+        f.write(rsa_public_key.export_key())
+    with open(priv_path, "wb") as f:
+        f.write(rsa_private_key.export_key())
+
+    return rsa_public_key, rsa_private_key
+
+def load_rsa_key(filename: str):
+    path = KEY_DIRECTORY / filename
+    with open(path, "rb") as f:
+        return RSA.import_key(f.read())
+    
+# ------------------------------------------------------- #
+# AES-GCM 
+# ------------------------------------------------------- #
+def aes_encrypt(key, plaintext: bytes) -> dict[bytes, bytes, bytes]:
+    cipher = AES.new(key, AES.MODE_GCM)
+    ciphertext, tag = cipher.encrypt_and_digest(plaintext)
+    
+    return {
+        "nonce": base64.b64encode(cipher.nonce),
+        "ciphertext": base64.b64encode(ciphertext),
+        "tag": base64.b64encode(tag)
+    }
+
+
+def aes_decrypt(key, encrypted_data: dict):
+    nonce = base64.b64decode(encrypted_data["nonce"])
+    ciphertext = base64.b64decode(encrypted_data["ciphertext"])
+    tag = base64.b64decode(encrypted_data["tag"])
+    
+    cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+    return cipher.decrypt_and_verify(ciphertext, tag)
+
+
+# ------------------------------------------------------- #
+# RSA
+# ------------------------------------------------------- #
+def rsa_encrypt(public_key, data: bytes) -> bytes:
+    cipher = PKCS1_OAEP.new(public_key)
+    return cipher.encrypt(data)
+
+def rsa_decrypt(private_key, data: bytes) -> bytes:
+    cipher = PKCS1_OAEP.new(private_key)
+    return cipher.decrypt(data)
+
+def generate_rsa_pss_signature(private_key_bytes, message: bytes) -> bytes:
+    private_key = RSA.import_key(private_key_bytes)
+    h = SHA512.new(message)
+    signature = pss.new(private_key).sign(h)
+    return signature
+
+def verify_rsa_pss_signature(public_key_bytes, message: bytes, signature: bytes) -> bool:
+    public_key = RSA.import_key(public_key_bytes)
+    h = SHA512.new(message)
+    try:
+        pss.new(public_key).verify(h, signature)
+        return True
+    except (ValueError, TypeError):
+        return False
+
+# ------------------------------------------------------- #
+# Log Stuff
+# ------------------------------------------------------- 
+def check_log_files(files: list[str]) -> list[str]:
+    readable_files = []
+    for f in files:
+        if os.path.exists(f):
+            try:
+                with open(f, "r"):
+                    readable_files.append(f)
+            except Exception as e:
+                print(f"[IO] Could not read log file {f}")
+        else:
+            print(f"[IO] Log file {f} does not exist")
+    return readable_files
+
+def send_log(sock, aes_key, rsa_private_key, logfile_path):
+    with open(logfile_path, "r") as f:
+            # Name
+            b64e = base64.b64encode(logfile_path.encode("UTF-8"))
+            gzipped = gzip.compress(b64e)
+            
+            send_aes_encrypted(sock, aes_key, gzipped, rsa_private_key)
+            
+            # Data
+            data = f.read()
+            b64e = base64.b64encode(data.encode("UTF-8"))
+            gzipped = gzip.compress(b64e)
+            
+            log_chunk_sent_count = send_aes_encrypted(sock, aes_key, gzipped, rsa_private_key)
+            
+            print(f"[NETWORK] Sent {logfile_path} in {log_chunk_sent_count} chunks of size {CHUNK_SIZE}")
+
+# ------------------------------------------------------- #
+# Chunk Data
+# ------------------------------------------------------- #
+
+def send_chunked(sock: socket.socket, data: bytes) -> None:
+    chunks = list(itertools.batched(bytes.__iter__(data), CHUNK_SIZE))
+    sock.sendall(len(chunks).to_bytes(INTEGER_SIZE, 'big'))
+    for idx, chunk in enumerate(chunks):
+        send_int(sock, idx)
+        send_int(sock, len(chunk))
+        sock.sendall(bytes(chunk))
+        
+        scode = sock.recv(1)
+        if scode == b'2':
+            continue
+        else:
+            print("Interrupted from server, ACK did not match")
+            print(f":{scode}")
+            break
+    return len(chunks)
+
+# ------------------------------------------------------- #
+# Helpers
+# ------------------------------------------------------- #
+
+def read_machine_id() -> str:
+    with open("/etc/machine-id", "r") as f:
+        return str(f.read().strip())
+
+def recv_fixed_width(sock: socket.socket, width: int) -> bytes:
+    buf = b''
+    while len(buf) < width:
+        chunk = sock.recv(width - len(buf))
+        if not chunk:
+            raise ConnectionError("Socket closed during fixed-width receive")
+        buf += chunk
+    return buf.rstrip(b'\x00')
+
+def send_fixed_width(sock: socket.socket, data: bytes, width: int):
+    if len(data) > width:
+        raise ValueError("Data too long for fixed-width field")
+    padded = data.ljust(width, b'\x00')
+    sock.sendall(padded)
+
+
+def send_int(sock: socket.socket, value: int, size: int = INTEGER_SIZE) -> None:
+    sock.sendall(value.to_bytes(size, 'big'))
+    
+def send_aes_encrypted(sock: socket.socket, aes_key: bytes,  data: bytes, rsa_private_key: RSA.RsaKey | None = None) -> int:
+    data = bytes(data)
+    aes_key = bytes(aes_key)
+    
+    data_aes_encrypted_bytes = aes_encrypt(aes_key, data)
+    
+    send_int(sock, len(data_aes_encrypted_bytes["nonce"]))
+    send_int(sock, len(data_aes_encrypted_bytes["ciphertext"]))
+    send_int(sock, len(data_aes_encrypted_bytes["tag"]))
+
+    chunk_count = send_chunked(sock, data_aes_encrypted_bytes["nonce"] + data_aes_encrypted_bytes["ciphertext"] + data_aes_encrypted_bytes["tag"]) 
+    
+    if rsa_private_key is not None:
+        rsa_pk_bytes = rsa_private_key.export_key()
+        
+        sign_bytes = generate_rsa_pss_signature(rsa_pk_bytes, data)
+        sign_aes_encrypted_bytes = aes_encrypt(aes_key, sign_bytes)
+        
+        send_int(sock, len(sign_aes_encrypted_bytes["nonce"]))
+        send_int(sock, len(sign_aes_encrypted_bytes["ciphertext"]))
+        send_int(sock, len(sign_aes_encrypted_bytes["tag"]))
+        
+        send_chunked(sock, sign_aes_encrypted_bytes["nonce"] + sign_aes_encrypted_bytes["ciphertext"] + sign_aes_encrypted_bytes["tag"])
+    
+    return chunk_count
+
+
+def send_unchunked_aes_encrypted(sock, aes_key: bytes,  data: bytes, rsa_private_key: RSA.RsaKey | None = None):
+    data = bytes(data)
+    aes_key = bytes(aes_key)
+    
+    data_aes_encrypted_bytes = aes_encrypt(aes_key, data)
+    
+    send_int(sock, len(data_aes_encrypted_bytes["nonce"]))
+    send_int(sock, len(data_aes_encrypted_bytes["ciphertext"]))
+    send_int(sock, len(data_aes_encrypted_bytes["tag"]))
+    
+    sock.sendall(data_aes_encrypted_bytes["nonce"] + data_aes_encrypted_bytes["ciphertext"] + data_aes_encrypted_bytes["tag"]) 
+    
+    if rsa_private_key is not None:
+        rsa_pk_bytes = rsa_private_key.export_key()
+        
+        sign_bytes = generate_rsa_pss_signature(rsa_pk_bytes, data)
+        sign_aes_encrypted_bytes = aes_encrypt(aes_key, sign_bytes)
+        
+        send_int(sock, len(sign_aes_encrypted_bytes["nonce"]))
+        send_int(sock, len(sign_aes_encrypted_bytes["ciphertext"]))
+        send_int(sock, len(sign_aes_encrypted_bytes["tag"]))
+    
+        send_chunked(sock, sign_aes_encrypted_bytes["nonce"] + sign_aes_encrypted_bytes["ciphertext"] + sign_aes_encrypted_bytes["tag"]) 
+
+def persistent_connect(host, port, retry_delay=5):
+    while True:
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((host, port))
+            print(f"[NETWORK] Connected to {host}:{port}")
+            return sock
+        except (ConnectionRefusedError, OSError) as e:
+            print(f"[NETWORK] Connection failed ({e}), retrying in {retry_delay}s...")
+            time.sleep(retry_delay)
+
+# ------------------------------------------------------- #
+# Main Subroutine
+# ------------------------------------------------------- #
+
+# A single send of the logs, generates a session-based AES key.
+def send_logs(rsa_public_key, rsa_private_key, server_rsa_public_key):        
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((SERVER_HOST, SERVER_PORT))
+
+    aes_key = generate_aes_key(CRYPTO_AES_KEYSIZE)
+    print("[CRYPTO] Generated Ephemeral AES Key")
+    print(f"[CRYPTO] AES Key is (HEX) 0x{aes_key.hex().upper()}")
+    
+    print(f"[NET/CRY] Sending AES key")
+    client_aes_key_enc_bytes = rsa_encrypt(server_rsa_public_key, aes_key)
+    sock.sendall(client_aes_key_enc_bytes)
+    
+    # Cannot send machine id with encryption because the server has no clue which key to load.
+    machine_id = read_machine_id()
+    print(f"[NETWORK] Sending /etc/machine-id {machine_id}")
+    send_unchunked_aes_encrypted(sock, aes_key, machine_id.encode("UTF-8"))
+    
+    send_fixed_width(sock, b'SendLogsBegin', 30)
+    print("[NETWORK] Handshake Succeeded")
+    
+    log_files_to_send = check_log_files(TARGET_LOG_FILES_TO_SEND)
+    
+    print(f"[NETWORK] Sending {len(log_files_to_send)} log files")
+    send_int(sock, len(log_files_to_send))
+    for log_file_path in log_files_to_send:
+        send_log(sock, aes_key, rsa_private_key, log_file_path)    
+
+def negotiate_reverse_connection(rsa_public_key, rsa_private_key, server_rsa_public_key):
+    sock = persistent_connect(SERVER_HOST, SERVER_PORT)
+        
+    aes_key = generate_aes_key(CRYPTO_AES_KEYSIZE)
+    print(f"[CRYPTO] AES Key is (HEX) 0x{aes_key.hex().upper()}")
+    
+    print(f"[NET/CRY] Sending AES key")
+    client_aes_key_enc_bytes = rsa_encrypt(server_rsa_public_key, aes_key)
+    sock.sendall(client_aes_key_enc_bytes)
+    
+    machine_id = read_machine_id()
+    print(f"[NETWORK] Sending /etc/machine-id {machine_id}")
+    send_unchunked_aes_encrypted(sock, aes_key, machine_id.encode("UTF-8"))
+    
+    send_fixed_width(sock, b'NegotiateReverseConnection', 30)
+    print("[NETWORK] Handshake Succeeded")
+    
+    reverse_listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    reverse_listener.bind(('0.0.0.0', 0))
+    reverse_listener.listen(1)
+    
+    send_int(sock, reverse_listener.getsockname()[1])
+    
+    print(f"[REVERSE] Listening on port {reverse_listener.getsockname()[1]}")
+    
+    return reverse_listener
+
+def handle_reverse_listener(connection, address, rsa_public_key, rsa_private_key, server_rsa_public_key):
+    code = recv_fixed_width(connection, 30)
+    
+    if code == b'SendLogs':
+        send_logs(rsa_public_key, rsa_private_key, server_rsa_public_key)
+    elif code == b'RenegotiateConnection':
+        print("[NETWORK] Server Sent Renegotiate Message")
+        connection.shutdown(socket.SHUT_WR)
+        connection.close()
+    else:
+        print(f"[NETWORK] Reverse Listener Recieved unknown code '{code}'")
+    
+    return code
+
+def main_subroutine():
+    try:
+        rsa_public_key, rsa_private_key = load_or_generate_keys(CRYPTO_RSA_KEYSIZE, KEY_DIRECTORY)
+    except:
+        print(f"[CRYPTO] Error loading or generating client RSA keys, exiting.")
+        exit()
+        
+    try:
+        server_rsa_public_key = load_rsa_key("server_rsa_public_key.pem")        
+    except:
+        print(f"[CRYPTO] Could not load key 'server_rsa_public_key.pem' in directory '{KEY_DIRECTORY}', exiting.")
+        exit()
+    
+    while True:
+        connection = negotiate_reverse_connection(rsa_public_key, rsa_private_key, server_rsa_public_key)
+        print("[NETWORK] Waiting For Connections...")
+        sock, address = connection.accept()
+        code = handle_reverse_listener(sock, address, rsa_public_key, rsa_private_key, server_rsa_public_key)
+        
+        if code == b'RenegotiateConnection':
+            break
+        
+if __name__ == "__main__":
+    while True:
+        main_subroutine()
