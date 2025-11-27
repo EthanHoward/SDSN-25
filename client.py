@@ -1,4 +1,4 @@
-#!/bin/python3
+#!./bin/python3
 import time
 import gzip
 import socket
