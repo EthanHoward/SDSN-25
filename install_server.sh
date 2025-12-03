@@ -51,5 +51,5 @@ echo "The server can remain running as the client keys can be dropped in, the se
 echo ""
 echo "TODO:"
 echo " - Set up your config file, client_config.ini"
-echo " - Copy your client public key over to the server key directory, named as client_<contents of /etc/machine-id>_rsa_public_key.pem (should already be named this)"
-echo " - Copy your server public key over to the client key directory, named as server_rsa_public_key.pem (should already be named this)"
+echo " - Copy your client public key over to the server key directory, named as client_<contents of /etc/machine-id>_rsa_public_key.pem (should already be named this) "
+echo " - Copy your server public key over to the client key directory, named as server_rsa_public_key.pem (should already be named this) "

@@ -6,7 +6,6 @@ import time
 import base64
 import socket
 import threading
-import itertools
 import configparser
 from pathlib import Path
 from datetime import datetime
@@ -536,6 +535,3 @@ def main_subroutine():
 # No try-catch here as we want to know WHY the application exits.
 if __name__ == "__main__":
     main_subroutine()
-
-# TODO:
-# ! Scheduler Thread Is Implemented but not tested for more than one client, awaiting tests. I think it will face an issue, may need to lock the threads or use a mutex for recv logs.

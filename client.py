@@ -3,7 +3,6 @@ import time
 import gzip
 import socket
 import itertools
-import sys
 import os
 import base64
 import configparser
