@@ -1,6 +1,8 @@
 TODO:
+Client and Server function on a PSK Basis.
 
-CRY
+Server requires the public key of a client for it to connect
+That same client requires the server public key too, this keeps a higher level of security than a TLS-Like implementation.
 
 
 INSTALL SERVER:

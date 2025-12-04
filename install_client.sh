@@ -3,7 +3,7 @@ if [ "$EUID" -ne 0 ]; then
   echo "Please run as root"
   exit 1
 fi
-
+  
 mkdir /usr/local/bin/lcli
 
 cd /usr/local/bin/lcli
@@ -52,3 +52,5 @@ echo ""
 echo "Share key via scp local_src user@server:/remote_dest"
 echo ""
 echo "Copy server key to here via scp user@server:/remote_src local_dest
+
+echo "Alternatively usage of python3 -m http.server 80 can be used to share the keys to/from server"
