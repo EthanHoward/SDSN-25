@@ -25,7 +25,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/lsrv/bin/python3 /usr/local/bin/lcli/client.py
+ExecStart=/usr/local/bin/lcli/bin/python3 /usr/local/bin/lcli/client.py
 Restart=on-failure
 
 WorkingDirectory=/usr/local/bin/lcli

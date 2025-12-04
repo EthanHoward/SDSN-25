@@ -18,33 +18,8 @@ wget https://raw.githubusercontent.com/EthanHoward/SDSN-25/refs/heads/main/serve
 
 chmod +x server.py
 
-sudo tee "/etc/systemd/system/lsrv.service" > /dev/null <<EOF
-[Unit]
-Description=Log Server Service
-After=network.target
-
-[Service]
-Type=simple
-ExecStart=/usr/local/bin/lsrv/bin/python3 /usr/local/bin/lsrv/server.py
-Restart=on-failure
-
-WorkingDirectory=/usr/local/bin/lsrv
-StandardOutput=journal
-StandardError=journal
-
-[Install]
-WantedBy=default.target
-EOF
-
-echo "Service Created"
-
-echo "Starting server service to generate keys"
-
-systemctl daemon-reload
-
-systemctl start lsrv
-
-systemctl status lsrv
+echo " Cannot start service due to input requirement "
+echo " Run server in a screen instance as root. "
 
 echo ""
 echo "Don't worry about the error (if there is one), that's OK"
