@@ -12,9 +12,9 @@ python3 -m venv .
 
 ./bin/pip3 install pycryptodome
 
-wget https://raw.githubusercontent.com/EthanHoward/SDSN-25/refs/heads/main/client.py
+wget https://raw.githubusercontent.com/EthanHoward/SDSN-25/refs/heads/main/client/client.py
 
-wget https://raw.githubusercontent.com/EthanHoward/SDSN-25/refs/heads/main/client_config.ini
+wget https://raw.githubusercontent.com/EthanHoward/SDSN-25/refs/heads/main/client/client_config.ini
 
 chmod +x client.py
 
