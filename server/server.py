@@ -32,6 +32,9 @@ CRYPTO_AES_KEYSIZE = int(config['crypto']['aes_keysize'])
 # Path of the server's keys.
 KEY_DIRECTORY = Path(config['crypto']['key_directory']).resolve()
 
+# ABSOLUTE Path to logstore AES 256 key
+LOGSTORE_KEY_FILE = Path(config['crypto']['logstore_key_file'])
+
 INTEGER_SIZE = 32
 CHUNK_SIZE = 4096
 
@@ -51,21 +54,47 @@ class HandshakeResult:
     aes_key: bytes
     client_rsa_public_key: RSA.RsaKey | None
     
-# ------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
 # Key Management
-# ------------------------------------------------------- #
-def generate_rsa_keypair(bits=2048):
+# --------------------------------------------------------------------------- #
+
+# 
+def generate_rsa_keypair(bits=CRYPTO_RSA_KEYSIZE):
+    """Generates an RSA Key. RSA Keys can be unlimited bits although typical values are 2048, 3072 and 4096 bits"""
     key = RSA.generate(bits)
     private_key = key.export_key()
     public_key = key.publickey().export_key()
     return public_key, private_key
 
-
-def generate_aes_key(bits=256):
+def generate_aes_key(bits=CRYPTO_AES_KEYSIZE):
+    """AES Keys can be 128, 192 or 256 bits."""
     return os.urandom(int(bits/8))
 
 
-def load_or_generate_keys(keysize: int, key_directory: str):
+def get_logstore_key(bits=CRYPTO_AES_KEYSIZE):
+    """Loads or Generates the key used for Encryption-At-Rest of logs"""
+    key_path = LOGSTORE_KEY_FILE.resolve()
+    key_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    # If it exists and is the correct size, use it.
+    if key_path.exists() and key_path.stat().st_size == bits/8:
+        with open(key_path, "rb") as f:
+            return f.read()
+        
+    key = generate_aes_key()
+    
+    # Save AES Key to disk
+    with open(key_path, "wb") as f:
+        f.write(key)
+    
+    # Set Perms to 600 / -rw------- (Will silently error if it fails or is on Windows - which it shouldn't be on)
+    try:
+        os.chmod(key_path, 0o600)
+    except PermissionError:
+        pass
+
+def get_rsa_keypair(keysize: int, key_directory: str):
+    """Loads or Generates an RSA Keypair"""
     key_dir = Path(key_directory).resolve()
     key_dir.mkdir(parents=True, exist_ok=True)
 
@@ -82,9 +111,8 @@ def load_or_generate_keys(keysize: int, key_directory: str):
         return rsa_public_key, rsa_private_key
 
     print("[CRYPTO] Generating new RSA keys...")
-    key = RSA.generate(keysize)
-    rsa_private_key = key
-    rsa_public_key = key.publickey()
+    rsa_private_key = RSA.generate(keysize)
+    rsa_public_key = rsa_private_key.publickey()
 
     # write to disk
     with open(pub_path, "wb") as f:
@@ -95,14 +123,16 @@ def load_or_generate_keys(keysize: int, key_directory: str):
     return rsa_public_key, rsa_private_key
 
 def load_rsa_key(filename: str):
+    """Import RSA key from (dot) PEM"""
     path = KEY_DIRECTORY / filename
     with open(path, "rb") as f:
         return RSA.import_key(f.read())
 
-# ------------------------------------------------------- #
-# AES-GCM
-# ------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# AES-GCM - Advanced Encryption Standard Galois/Counter Mode
+# --------------------------------------------------------------------------- #
 def aes_encrypt(key, plaintext: bytes):
+    """Encrypt the given data with AES"""
     cipher = AES.new(key, AES.MODE_GCM)
     ciphertext, tag = cipher.encrypt_and_digest(plaintext)
 
@@ -112,8 +142,8 @@ def aes_encrypt(key, plaintext: bytes):
         "tag": base64.b64encode(tag)
     }
 
-
 def aes_decrypt(key, encrypted_data: dict):
+    """Decrypt AES-Encrypted data"""
     nonce = base64.b64decode(encrypted_data["nonce"])
     ciphertext = base64.b64decode(encrypted_data["ciphertext"])
     tag = base64.b64decode(encrypted_data["tag"])
@@ -122,24 +152,28 @@ def aes_decrypt(key, encrypted_data: dict):
     return cipher.decrypt_and_verify(ciphertext, tag)
 
 
-# ------------------------------------------------------- #
-# RSA
-# ------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# RSA - Rivest-Shamir-Adleman cryptosystem
+# --------------------------------------------------------------------------- #
 
 def rsa_encrypt(public_key, data: bytes) -> bytes:
+    """Encrypt given data with RSA"""
     cipher = PKCS1_OAEP.new(public_key)
     return cipher.encrypt(data)
 
 def rsa_decrypt(private_key, data: bytes) -> bytes:
+    """Decrypt RSA-Encrypted data"""
     cipher = PKCS1_OAEP.new(private_key)
     return cipher.decrypt(data)
 
 def generate_rsa_pss_signature(rsa_private_key: RSA.RsaKey, message: bytes) -> bytes:
+    """Generates an RSA PSS signature"""
     h = SHA512.new(message)
     signature = pss.new(rsa_private_key).sign(h)
     return signature
 
 def verify_rsa_pss_signature(rsa_public_key: RSA.RsaKey, message: bytes, signature: bytes) -> bool:
+    """Verifies an RSA PSS signature"""
     h = SHA512.new(message)
     try:
         pss.new(rsa_public_key).verify(h, signature)
@@ -167,6 +201,7 @@ def recv_log(connection, aes_key, client_rsa_public_key):
     return log_path, log_data
 
 def save_log(machine_id, log_path, log_data) -> None:
+    """Saves a given log file (string data) to disk"""
     cfg_logpath = Path(LOG_SAVE_PATH).resolve()
     cli_path = Path(log_path)
 
@@ -198,6 +233,7 @@ def save_log(machine_id, log_path, log_data) -> None:
 # ------------------------------------------------------ #
 
 def recv_exact(sock, n):
+    """Receives an exact amount (`n`) of data (`bytes`) from a socket"""
     data = b''
     while len(data) < n:
         chunk = sock.recv(n - len(data))
@@ -208,6 +244,7 @@ def recv_exact(sock, n):
 
 
 def recv_chunked(connection: socket.socket):
+    """Receives a set of data sent in chunks and reconstructs it. Does not have order-assurance but should due to TCP socket"""
     chunk_count = recv_int(connection)
     chunks = []
 
@@ -226,17 +263,20 @@ def recv_chunked(connection: socket.socket):
     return b"".join(chunks), chunk_count
 
 
-# ------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
 # Helpers
-# ------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
 
 def recv_int(connection: socket.socket, size: int = INTEGER_SIZE) -> int:
+    """Receive a big-endian integer of fixed byte width from a socket."""
     return int.from_bytes(connection.recv(size), 'big')
 
 def send_int(connection: socket.socket, value: int, size: int = INTEGER_SIZE) -> None:
+    """Send an integer in big-endian format using fixed-width byte encoding."""
     connection.sendall(value.to_bytes(size, 'big'))
 
 def recv_fixed_width(sock: socket.socket, width: int) -> bytes:
+    """Receive a fixed-width, NUL-padded byte field and strip trailing padding."""
     buf = b''
     while len(buf) < width:
         chunk = sock.recv(width - len(buf))
@@ -246,6 +286,7 @@ def recv_fixed_width(sock: socket.socket, width: int) -> bytes:
     return buf.rstrip(b'\x00')
 
 def send_fixed_width(sock: socket.socket, data: bytes, width: int):
+    """Send a fixed-width, NUL-padded byte field. Raises ValueError if data exceeds width."""
     if len(data) > width:
         raise ValueError("Data too long for fixed-width field")
     padded = data.ljust(width, b'\x00')
@@ -295,12 +336,14 @@ def recv_unchunked_aes_encrypted(connection, aes_key, client_rsa_public_key: RSA
 
     return data_dec_bytes
 
-# ------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
 # All pre-code authentication logic (Handshake)
-# ------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
 
 def perform_handshake(connection: socket.socket) -> HandshakeResult:
-    # Receive and decrypt AES key
+    """Perform the initial cryptographic handshake:
+    decrypt AES session key, receive machine ID, and load the client's RSA public key."""
+    
     client_aes_key_enc_bytes = connection.recv(CRYPTO_AES_KEYSIZE)
     client_aes_key = rsa_decrypt(rsa_private_key, client_aes_key_enc_bytes)
     print(f"[CRYPTO] Client AES key (HEX): 0x{client_aes_key.hex().upper()}")
@@ -315,7 +358,7 @@ def perform_handshake(connection: socket.socket) -> HandshakeResult:
     except Exception as e:
         raise Exception(f"Failed to load client RSA key: {e}")
 
-    print(f"[HANDSHAKE] ✓ Complete for {machine_id}")
+    print(f"[HANDSHAKE] Complete for {machine_id}")
     
     return HandshakeResult(
         machine_id=machine_id,
@@ -323,16 +366,18 @@ def perform_handshake(connection: socket.socket) -> HandshakeResult:
         client_rsa_public_key=client_rsa_public_key
     )
 
-# ------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
 # Main Subroutine
-# ------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
 
-rsa_public_key, rsa_private_key = load_or_generate_keys(CRYPTO_RSA_KEYSIZE, KEY_DIRECTORY)
+rsa_public_key, rsa_private_key = get_rsa_keypair(CRYPTO_RSA_KEYSIZE, KEY_DIRECTORY)
 
 print(f"[CRYPTO] Loaded {rsa_private_key}")
 print(f"[CRYPTO] Loaded {rsa_public_key}")
 
 def handle_client_request(connection: socket.socket, address) -> bool:
+    """Handle a fully authenticated client request after handshake, routing based on operation code."""
+    
     print(f"[NETWORK] Connection from {address} accepted")
 
     try:
@@ -379,31 +424,33 @@ def handle_client_request(connection: socket.socket, address) -> bool:
     connection.shutdown(socket.SHUT_WR)
     connection.close()
 
-# ------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
 # CLI Commands
-# ------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
 
 def cli_machines():
+    """Print a formatted table of all known client machines and their last negotiated reverse ports."""
     print(f"[CLI] | {"machine-id".ljust(32, ' ')} | {"IP".ljust(15, ' ')} | {"PORT".ljust(5, ' ')} |")
     print(f"[CLI] +-{"".ljust(32, '-')}-+-{"".ljust(15, '-')}-+-{"".ljust(5, '-')}-+")
     for id, info in list(client_machines_info.items()):
         print(f"[CLI] | {str(info.id).ljust(32, ' ')} | {str(info.ip).ljust(15, ' ')} | {str(info.port).ljust(5, ' ')} |")
 
-# HELPER Finds Client by Machine ID
 def _find_client(machine_id: str) -> ClientInfo | None:
+    """Look up a client by machine ID in the active reverse-connection registry."""
     for id, info in list(client_machines_info.items()):
         if id == machine_id:
             return info
     return None
 
-# HELPER Sends command to reverse listener
 def _send_command_to_client(client: ClientInfo, command: bytes):
+    """Directly connect to a client's reverse listener and send a fixed-width command."""
     connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     connection.connect((client.ip, client.port))
     send_fixed_width(connection, command, 30)
     client_machines_info[client.id] = None
 
 def cli_renegotiate(cmd):
+    """CLI: Request the server to instruct a client to renegotiate its connection."""
     cmd_parts = cmd.strip().split(" ")
     if len(cmd_parts) != 2:
         print("[CLI] Usage: renegotiate <machine-id>")
@@ -418,6 +465,7 @@ def cli_renegotiate(cmd):
     _send_command_to_client(client, b'RenegotiateConnection')
 
 def cli_force_send(cmd):
+    """CLI: Force a specific client to immediately send its logs to the server."""
     cmd_parts = cmd.strip().split(" ")
     if len(cmd_parts) != 2:
         print("[CLI] Usage: force_send <machine-id>")
@@ -431,12 +479,13 @@ def cli_force_send(cmd):
     print(f"[NETWORK] Sending log request to {client.id} via {client.ip}:{client.port}")
     _send_command_to_client(client, b'SendLogs')
 
-# Force Send All
 def cli_fsa():
+    """CLI: Force-send logs for all currently registered clients."""
     for id, _ in list(client_machines_info.items()):
         cli_force_send(f"force_send {id}")
 
 def cli_whois(cmd):
+    """CLI: Given an IP address, display the associated machine ID if known."""
     cmd_parts = cmd.strip().split(" ")
     if len(cmd_parts) != 2:
         print("[CLI] Usage: whois <ip>")

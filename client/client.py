@@ -280,7 +280,7 @@ def perform_handshake(sock: socket.socket, server_rsa_public_key: RSA.RsaKey) ->
     print(f"[NETWORK] Sending /etc/machine-id {machine_id}")
     send_unchunked_aes_encrypted(sock, aes_key, machine_id.encode("UTF-8"))
     
-    print(f"[HANDSHAKE] ✓ Complete")
+    print(f"[HANDSHAKE] Complete")
     
     return HandshakeResult(
         aes_key=aes_key,

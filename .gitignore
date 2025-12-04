@@ -4,3 +4,4 @@ Documents/
 lib/
 lib64/
 *.pem
+**/log/
