@@ -25,7 +25,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/lsrv/server.py
+ExecStart=/usr/local/bin/lsrv/bin/python3 /usr/local/bin/lsrv/server.py
 Restart=on-failure
 
 WorkingDirectory=/usr/local/bin/lsrv
