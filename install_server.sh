@@ -40,6 +40,8 @@ echo "Service Created"
 
 echo "Starting server service to generate keys"
 
+systemctl daemon-reload
+
 systemctl start lsrv
 
 systemctl status lsrv

@@ -66,6 +66,7 @@ def generate_rsa_keypair(bits=CRYPTO_RSA_KEYSIZE):
     public_key = key.publickey().export_key()
     return public_key, private_key
 
+
 def generate_aes_key(bits=CRYPTO_AES_KEYSIZE):
     """AES Keys can be 128, 192 or 256 bits."""
     return os.urandom(int(bits/8))

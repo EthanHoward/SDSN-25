@@ -16,7 +16,7 @@ from pathlib import Path
 config = configparser.ConfigParser()
 config.read("client_config.ini")
 
-# These are of the target server to connect to 
+# These are of the target server to connect to
 SERVER_HOST = config['server']['host']
 SERVER_PORT = int(config['server']['port'])
 
@@ -44,18 +44,21 @@ class HandshakeResult:
 # ------------------------------------------------------- #
 # Key Management
 # ------------------------------------------------------- #
-def generate_rsa_keypair(bits=2048):
+def generate_rsa_keypair(bits=CRYPTO_RSA_KEYSIZE):
+    """Generates an RSA Key. RSA Keys can be unlimited bits although typical values are 2048, 3072 and 4096 bits"""
     key = RSA.generate(bits)
     private_key = key.export_key()
     public_key = key.publickey().export_key()
     return public_key, private_key
 
 
-def generate_aes_key(bits=256):
+def generate_aes_key(bits=CRYPTO_AES_KEYSIZE):
+    """AES Keys can be 128, 192 or 256 bits."""
     return os.urandom(int(bits/8))
 
     
-def load_or_generate_keys(keysize: int, key_directory: str):
+def get_rsa_keypair(keysize: int, key_directory: str):
+    """Loads or Generates an RSA Keypair"""
     key_dir = Path(key_directory).resolve()
     key_dir.mkdir(parents=True, exist_ok=True) 
     
@@ -85,6 +88,7 @@ def load_or_generate_keys(keysize: int, key_directory: str):
     return rsa_public_key, rsa_private_key
 
 def load_rsa_key(filename: str):
+    """Import RSA key from (dot) PEM"""
     path = KEY_DIRECTORY / filename
     with open(path, "rb") as f:
         return RSA.import_key(f.read())
@@ -345,7 +349,7 @@ def handle_reverse_listener(connection, address, rsa_public_key, rsa_private_key
 
 def main_subroutine():
     try:
-        rsa_public_key, rsa_private_key = load_or_generate_keys(CRYPTO_RSA_KEYSIZE, KEY_DIRECTORY)
+        rsa_public_key, rsa_private_key = get_rsa_keypair(CRYPTO_RSA_KEYSIZE, KEY_DIRECTORY)
     except:
         print(f"[CRYPTO] Error loading or generating client RSA keys, exiting.")
         exit()
