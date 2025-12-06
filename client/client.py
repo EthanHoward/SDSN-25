@@ -13,6 +13,9 @@ from Crypto.Hash import SHA512
 from Crypto.Signature import pss
 from pathlib import Path
 
+
+
+
 config = configparser.ConfigParser()
 config.read("client_config.ini")
 
@@ -28,8 +31,22 @@ CRYPTO_AES_KEYSIZE = int(config['crypto']['aes_keysize'])
 KEY_DIRECTORY = Path(config['crypto']['key_directory']).resolve()
 SERVER_PUB_PATH = os.path.join(os.getcwd(), "server_rsa_public_key.pem")
 
-TARGET_LOG_FILES_TO_SEND = ["/var/log/syslog", "/var/log/auth.log", "/var/log/ufw.log", "/var/log/dpkg.log"]
+# Self-explanatory really, IF it can read the file, it will send it.
+TARGET_LOG_FILES_TO_SEND = [
+    # Debian Logs
+    "/var/log/syslog", 
+    "/var/log/auth.log", 
+    "/var/log/ufw.log", 
+    "/var/log/dpkg.log",
+    
+    # UNIX / MacOS Logs
+    "/var/log/system.log",
+    "/var/log/wifi.log",
+    "/var/log/fsck_apfs.log",
+    "/var/log/fsck_hfs.log"
+    ]
 
+# Sizes for socket comms, server and client need to be the same
 INTEGER_SIZE = 32
 CHUNK_SIZE = 4096
 
@@ -350,8 +367,9 @@ def handle_reverse_listener(connection, address, rsa_public_key, rsa_private_key
 def main_subroutine():
     try:
         rsa_public_key, rsa_private_key = get_rsa_keypair(CRYPTO_RSA_KEYSIZE, KEY_DIRECTORY)
-    except:
+    except Exception as e:
         print(f"[CRYPTO] Error loading or generating client RSA keys, exiting.")
+        print(f"[CRYPTO] {e}")
         exit()
         
     try:
