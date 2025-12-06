@@ -1,4 +1,3 @@
-#!./bin/python3
 import time
 import gzip
 import socket
@@ -74,7 +73,7 @@ def generate_aes_key(bits=CRYPTO_AES_KEYSIZE):
     return os.urandom(int(bits/8))
 
     
-def get_rsa_keypair(keysize: int, key_directory: str):
+def get_rsa_keypair(keysize: int, key_directory: Path):
     """Loads or Generates an RSA Keypair"""
     key_dir = Path(key_directory).resolve()
     key_dir.mkdir(parents=True, exist_ok=True) 
@@ -104,7 +103,7 @@ def get_rsa_keypair(keysize: int, key_directory: str):
 
     return rsa_public_key, rsa_private_key
 
-def load_rsa_key(filename: str):
+def load_rsa_key(filename: Path | str):
     """Import RSA key from (dot) PEM"""
     path = KEY_DIRECTORY / filename
     with open(path, "rb") as f:
@@ -113,7 +112,7 @@ def load_rsa_key(filename: str):
 # ------------------------------------------------------- #
 # AES-GCM 
 # ------------------------------------------------------- #
-def aes_encrypt(key, plaintext: bytes) -> dict[bytes, bytes, bytes]:
+def aes_encrypt(key, plaintext: bytes) -> dict[str, bytes]:
     cipher = AES.new(key, AES.MODE_GCM)
     ciphertext, tag = cipher.encrypt_and_digest(plaintext)
     
@@ -194,7 +193,7 @@ def send_log(sock, aes_key, rsa_private_key, logfile_path):
 # Chunk Data
 # ------------------------------------------------------- #
 
-def send_chunked(sock: socket.socket, data: bytes) -> None:
+def send_chunked(sock: socket.socket, data: bytes) -> int:
     chunks = list(itertools.batched(bytes.__iter__(data), CHUNK_SIZE))
     sock.sendall(len(chunks).to_bytes(INTEGER_SIZE, 'big'))
     for idx, chunk in enumerate(chunks):
@@ -389,4 +388,9 @@ def main_subroutine():
         
 if __name__ == "__main__":
     while True:
-        main_subroutine()
+        try:
+            main_subroutine()
+        except Exception as e:
+            print(f"[M/THREAD] Error while running client code, {e}")
+            print("[M/THREAD] Restarting in 5s...")
+            time.sleep(5)

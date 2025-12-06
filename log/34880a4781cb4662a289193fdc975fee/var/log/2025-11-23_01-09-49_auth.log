@@ -1,8 +1,0 @@
-2025-11-23T00:35:01.870445+00:00 udesk CRON[9593]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
-2025-11-23T00:35:01.875819+00:00 udesk CRON[9593]: pam_unix(cron:session): session closed for user root
-2025-11-23T00:45:01.888454+00:00 udesk CRON[9613]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
-2025-11-23T00:45:01.897257+00:00 udesk CRON[9613]: pam_unix(cron:session): session closed for user root
-2025-11-23T00:55:01.908405+00:00 udesk CRON[9630]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
-2025-11-23T00:55:01.914428+00:00 udesk CRON[9630]: pam_unix(cron:session): session closed for user root
-2025-11-23T01:05:01.924259+00:00 udesk CRON[10763]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
-2025-11-23T01:05:01.929603+00:00 udesk CRON[10763]: pam_unix(cron:session): session closed for user root
