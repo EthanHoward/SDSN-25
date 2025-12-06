@@ -1,3 +1,4 @@
+#!./bin/python3
 import os
 import sys
 import gzip
@@ -16,6 +17,8 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import pss
 from Crypto.Cipher import AES, PKCS1_OAEP
 
+#! TODO: Need to add code for refreshing client rsa keys (tell clients to get new ones) and SEPERATELY refresh the server RSA keys
+#! TODO: Also to add the hybrid-PKI approach, generates a cert per-session
 
 config = configparser.ConfigParser()
 config.read("server_config.ini")
@@ -256,7 +259,6 @@ def save_log(machine_id, log_path, log_data) -> None:
     aes_encrypt_file(full_path)
 
 
-#! TODO: Finish Impl This
 def aes_encrypt_file(filepath: Path, key=get_logstore_key()):
     """AES Encrypts the provided plaintext file, deletes it and writes an encrypted AES file and a SHA signature file"""
     fp_exists = filepath.exists() and filepath.stat().st_size > 0

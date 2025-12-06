@@ -1,3 +1,4 @@
+#!./bin/python3
 import time
 import gzip
 import socket
@@ -12,8 +13,8 @@ from Crypto.Hash import SHA512
 from Crypto.Signature import pss
 from pathlib import Path
 
-
-
+#! TODO: Need to add code for refreshing client rsa keys (tell clients to get new ones) and SEPERATELY refresh the server RSA keys
+#! TODO: Also to add the hybrid-PKI approach, generates a cert per-session
 
 config = configparser.ConfigParser()
 config.read("client_config.ini")
