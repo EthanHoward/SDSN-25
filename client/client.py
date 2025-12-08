@@ -53,6 +53,13 @@ CHUNK_SIZE = 4096
 # Ensure Key directory actually exists...
 KEY_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
+# Global RSA key variables
+rsa_public_key = None
+rsa_private_key = None
+old_rsa_public_key = None
+old_rsa_private_key = None
+server_rsa_public_key = None
+
 @dataclass
 class HandshakeResult:
     aes_key: bytes
@@ -104,6 +111,20 @@ def get_rsa_keypair(keysize: int, key_directory: Path):
 
     return rsa_public_key, rsa_private_key
 
+def replace_server_rsa_public_key(new: RSA.RsaKey, key_directory: Path = KEY_DIRECTORY):
+    key_dir = Path(key_directory).resolve()
+    key_dir.mkdir(parents=True, exist_ok=True)
+    
+    spub_path = key_dir / "server_rsa_public_key.pem"
+    
+    spub_exists = spub_path.exists()
+    
+    if spub_exists:
+        os.remove(spub_path)
+        
+    with open(spub_path, "wb") as f:
+        f.write(new.export_key())
+
 def load_rsa_key(filename: Path | str):
     """Import RSA key from (dot) PEM"""
     path = KEY_DIRECTORY / filename
@@ -147,14 +168,14 @@ def rsa_decrypt(private_key, data: bytes) -> bytes:
 def generate_rsa_pss_signature(private_key_bytes, message: bytes) -> bytes:
     private_key = RSA.import_key(private_key_bytes)
     h = SHA512.new(message)
-    signature = pss.new(private_key).sign(h)
+    signature = pss.new(private_key).sign(h) # type: ignore
     return signature
 
 def verify_rsa_pss_signature(public_key_bytes, message: bytes, signature: bytes) -> bool:
     public_key = RSA.import_key(public_key_bytes)
     h = SHA512.new(message)
     try:
-        pss.new(public_key).verify(h, signature)
+        pss.new(public_key).verify(h, signature) # type: ignore
         return True
     except (ValueError, TypeError):
         return False
@@ -179,8 +200,10 @@ def _encode_and_compress(data: str) -> bytes:
     """Helper: base64 encode and gzip compress"""
     return gzip.compress(base64.b64encode(data.encode("UTF-8")))
 
-def send_log(sock, aes_key, rsa_private_key, logfile_path):
+def send_log(sock, aes_key, logfile_path):
     """Send a single log file (path + data)"""
+    global rsa_private_key
+    
     with open(logfile_path, "r") as f:
         # Send path
         send_aes_encrypted(sock, aes_key, _encode_and_compress(logfile_path), rsa_private_key)
@@ -229,6 +252,7 @@ def recv_fixed_width(sock: socket.socket, width: int) -> bytes:
     return buf.rstrip(b'\x00')
 
 def send_fixed_width(sock: socket.socket, data: bytes, width: int):
+    print(f"SendFW {data.decode("utf-8")}")
     if len(data) > width:
         raise ValueError("Data too long for fixed-width field")
     padded = data.ljust(width, b'\x00')
@@ -237,7 +261,22 @@ def send_fixed_width(sock: socket.socket, data: bytes, width: int):
 
 def send_int(sock: socket.socket, value: int, size: int = INTEGER_SIZE) -> None:
     sock.sendall(value.to_bytes(size, 'big'))
-    
+
+def recv_int(connection: socket.socket, size: int = INTEGER_SIZE) -> int:
+    """Receive a big-endian integer of fixed byte width from a socket."""
+    return int.from_bytes(connection.recv(size), 'big')
+
+def recv_exact(sock, n):
+    """Receives an exact amount (`n`) of data (`bytes`) from a socket"""
+    data = b''
+    while len(data) < n:
+        chunk = sock.recv(n - len(data))
+        if not chunk:
+            raise ConnectionResetError(
+                "Connection closed while receiving chunk")
+        data += chunk
+    return data
+
 def _send_aes_blob(sock: socket.socket, encrypted_blob: dict, chunked: bool = True) -> int:
     """Helper to send AES encrypted blob (nonce + ciphertext + tag)"""
     send_int(sock, len(encrypted_blob["nonce"]))
@@ -252,27 +291,40 @@ def _send_aes_blob(sock: socket.socket, encrypted_blob: dict, chunked: bool = Tr
         sock.sendall(payload)
         return 0
 
-def send_aes_encrypted(sock: socket.socket, aes_key: bytes, data: bytes, rsa_private_key: RSA.RsaKey | None = None) -> int:
+def send_aes_encrypted(sock: socket.socket, aes_key: bytes, data: bytes, signing_key: RSA.RsaKey | None = None) -> int:
     """Send AES encrypted data with optional RSA signature (chunked)"""
+    global rsa_private_key
+    
     encrypted_data = aes_encrypt(aes_key, bytes(data))
     chunk_count = _send_aes_blob(sock, encrypted_data, chunked=True)
     
-    if rsa_private_key is not None:
-        signature = generate_rsa_pss_signature(rsa_private_key.export_key(), bytes(data))
+    # Use provided key or fall back to global
+    key_to_use = signing_key if signing_key is not None else rsa_private_key
+    
+    if key_to_use is not None:
+        signature = generate_rsa_pss_signature(key_to_use.export_key(), bytes(data))
         encrypted_sig = aes_encrypt(aes_key, signature)
         _send_aes_blob(sock, encrypted_sig, chunked=True)
     
     return chunk_count
 
-def send_unchunked_aes_encrypted(sock: socket.socket, aes_key: bytes, data: bytes, rsa_private_key: RSA.RsaKey | None = None):
+def send_unchunked_aes_encrypted(sock: socket.socket, aes_key: bytes, data: bytes, signing_key: RSA.RsaKey | None = None, sign: bool = True):
     """Send AES encrypted data with optional RSA signature (unchunked)"""
+    global rsa_private_key
+    
     encrypted_data = aes_encrypt(aes_key, bytes(data))
     _send_aes_blob(sock, encrypted_data, chunked=False)
     
-    if rsa_private_key is not None:
-        signature = generate_rsa_pss_signature(rsa_private_key.export_key(), bytes(data))
-        encrypted_sig = aes_encrypt(aes_key, signature)
-        _send_aes_blob(sock, encrypted_sig, chunked=True)  # Signature always chunked 
+    if sign:
+        if signing_key is None:
+            key_to_use = rsa_private_key
+        else:
+            key_to_use = signing_key
+        
+        if key_to_use is not None:
+            signature = generate_rsa_pss_signature(key_to_use.export_key(), bytes(data))
+            encrypted_sig = aes_encrypt(aes_key, signature)
+            _send_aes_blob(sock, encrypted_sig, chunked=True)
 
 def persistent_connect(host, port, retry_delay=5):
     while True:
@@ -289,7 +341,9 @@ def persistent_connect(host, port, retry_delay=5):
 # All pre-code authentication logic (Handshake)
 # ------------------------------------------------------- #
 
-def perform_handshake(sock: socket.socket, server_rsa_public_key: RSA.RsaKey) -> HandshakeResult:
+def perform_handshake(sock: socket.socket) -> HandshakeResult:
+    global server_rsa_public_key
+    
     aes_key = generate_aes_key(CRYPTO_AES_KEYSIZE)
     print(f"[CRYPTO] AES Key is (HEX) 0x{aes_key.hex().upper()}")
     
@@ -299,7 +353,7 @@ def perform_handshake(sock: socket.socket, server_rsa_public_key: RSA.RsaKey) ->
     
     machine_id = read_machine_id()
     print(f"[NETWORK] Sending /etc/machine-id {machine_id}")
-    send_unchunked_aes_encrypted(sock, aes_key, machine_id.encode("UTF-8"))
+    send_unchunked_aes_encrypted(sock, aes_key, machine_id.encode("UTF-8"), None, False)
     
     print(f"[HANDSHAKE] Complete")
     
@@ -313,13 +367,13 @@ def perform_handshake(sock: socket.socket, server_rsa_public_key: RSA.RsaKey) ->
 # ------------------------------------------------------- #
 
 # A single send of the logs, generates a session-based AES key.
-def send_logs(rsa_public_key, rsa_private_key, server_rsa_public_key):        
+def send_logs():
+    global server_rsa_public_key
+    
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((SERVER_HOST, SERVER_PORT))
 
-    # ===== HANDSHAKE =====
-    handshake = perform_handshake(sock, server_rsa_public_key)
-    # =====================
+    handshake = perform_handshake(sock)
     
     send_fixed_width(sock, b'SendLogsBegin', 30)
     print("[NETWORK] Operation: SendLogsBegin")
@@ -329,12 +383,83 @@ def send_logs(rsa_public_key, rsa_private_key, server_rsa_public_key):
     
     send_int(sock, len(log_files_to_send))
     for log_file_path in log_files_to_send:
-        send_log(sock, handshake.aes_key, rsa_private_key, log_file_path)
+        send_log(sock, handshake.aes_key, log_file_path)
 
-def negotiate_reverse_connection(rsa_public_key, rsa_private_key, server_rsa_public_key):
+def refresh_server_rsa_key():
+    global server_rsa_public_key
+    
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((SERVER_HOST, SERVER_PORT))
+    
+    handshake = perform_handshake(sock)
+    
+    send_fixed_width(sock, b'RequestNewRSAKey', 30)
+    print("[NETWORK] Operation: RequestNewRSAKey")
+    
+    lenbytes = recv_int(sock)
+    
+    keypem = recv_exact(sock, lenbytes)
+    
+    try:
+        server_pk = RSA.import_key(keypem)
+        replace_server_rsa_public_key(server_pk)
+        server_rsa_public_key = server_pk
+    except Exception as e:
+        print(f"Failed import pk '{e}'")
+        
+    time.sleep(5)
+    
+def refresh_client_rsa_keys():
+    global rsa_public_key, rsa_private_key, old_rsa_public_key, old_rsa_private_key
+
+    old_rsa_public_key = rsa_public_key
+    old_rsa_private_key = rsa_private_key
+
+
+    key_dir = Path(KEY_DIRECTORY).resolve()
+    machine_id = read_machine_id()
+    old_pub_path = key_dir / f"client_{machine_id}_rsa_public_key.pem"
+    old_priv_path = key_dir / f"client_{machine_id}_rsa_private_key.pem"
+
+
+    print("[CRYPTO] Deleting old RSA keys from disk...")
+    if old_pub_path.exists():
+        os.remove(old_pub_path)
+        print(f"[CRYPTO] Deleted {old_pub_path}")
+    if old_priv_path.exists():
+        os.remove(old_priv_path)
+        print(f"[CRYPTO] Deleted {old_priv_path}")
+
+
+    print("[CRYPTO] Generating new RSA keys...")
+    new_key = RSA.generate(CRYPTO_RSA_KEYSIZE)
+    rsa_private_key = new_key
+    rsa_public_key = new_key.publickey()
+
+
+    print("[CRYPTO] Writing new RSA keys to disk...")
+    with open(old_pub_path, "wb") as f:
+        f.write(rsa_public_key.export_key())
+    with open(old_priv_path, "wb") as f:
+        f.write(rsa_private_key.export_key())
+
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((SERVER_HOST, SERVER_PORT))
+
+    perform_handshake(sock)
+
+    send_fixed_width(sock, b"RefreshClientRSAKeys", 30)    
+
+    send_chunked(sock, rsa_public_key.export_key())
+
+
+def negotiate_reverse_connection():
+    global server_rsa_public_key
+    
     sock = persistent_connect(SERVER_HOST, SERVER_PORT)
     
-    handshake = perform_handshake(sock, server_rsa_public_key)
+    handshake = perform_handshake(sock)
     
     send_fixed_width(sock, b'NegotiateReverseConnection', 30)
     print("[NETWORK] Operation: NegotiateReverseConnection")
@@ -349,22 +474,30 @@ def negotiate_reverse_connection(rsa_public_key, rsa_private_key, server_rsa_pub
     return reverse_listener
 
 # Handles reverse listener connections from server
-def handle_reverse_listener(connection, address, rsa_public_key, rsa_private_key, server_rsa_public_key):
+def handle_reverse_listener(connection, address):
     code = recv_fixed_width(connection, 30)
     
     if code == b'SendLogs':
         print("[REVERSE] Server requested logs")
-        send_logs(rsa_public_key, rsa_private_key, server_rsa_public_key)
+        send_logs()
     elif code == b'RenegotiateConnection':
         print("[NETWORK] Server sent renegotiate message")
         connection.shutdown(socket.SHUT_WR)
         connection.close()
+    elif code == b'RefreshServerRSA':
+        print("[NETWORK] Server is refreshing its RSA key")
+        refresh_server_rsa_key()
+    elif code == b'RefreshRSAKeys':
+        refresh_client_rsa_keys()
+        
     else:
         print(f"[NETWORK] Reverse listener received unknown code '{code}'")
     
     return code
 
 def main_subroutine():
+    global rsa_public_key, rsa_private_key, server_rsa_public_key
+    
     try:
         rsa_public_key, rsa_private_key = get_rsa_keypair(CRYPTO_RSA_KEYSIZE, KEY_DIRECTORY)
     except Exception as e:
@@ -379,12 +512,12 @@ def main_subroutine():
         exit()
     
     while True:
-        connection = negotiate_reverse_connection(rsa_public_key, rsa_private_key, server_rsa_public_key)
+        connection = negotiate_reverse_connection()
         print("[NETWORK] Waiting for connections...")
         sock, address = connection.accept()
-        code = handle_reverse_listener(sock, address, rsa_public_key, rsa_private_key, server_rsa_public_key)
+        code = handle_reverse_listener(sock, address)
         
-        if code == b'RenegotiateConnection':
+        if code == b'RenegotiateConnection' or code == b'RefreshServerRSA':
             break
         
 if __name__ == "__main__":

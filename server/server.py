@@ -14,6 +14,7 @@ from datetime import datetime
 from dataclasses import dataclass
 from Crypto.Hash import SHA512
 from Crypto.PublicKey import RSA
+from Crypto.PublicKey.RSA import RsaKey
 from Crypto.Signature import pss
 from Crypto.Cipher import AES, PKCS1_OAEP
 
@@ -59,7 +60,7 @@ class ClientInfo:
 class HandshakeResult:
     machine_id: str
     aes_key: bytes
-    client_rsa_public_key: RSA.RsaKey | None
+    client_rsa_public_key: RsaKey | None
 
 
 # --------------------------------------------------------------------------- #
@@ -134,6 +135,30 @@ def get_rsa_keypair(keysize: int, key_directory: Path):
 
     return rsa_public_key, rsa_private_key
 
+def regenerate_rsa_keys(keysize: int = CRYPTO_RSA_KEYSIZE, key_directory: Path = KEY_DIRECTORY):
+    old_puk = rsa_public_key
+    old_prk = rsa_private_key
+    
+    key_dir = Path(key_directory).resolve()
+    key_dir.mkdir(parents=True, exist_ok=True)
+
+    pub_path = key_dir / "server_rsa_public_key.pem"
+    priv_path = key_dir / "server_rsa_private_key.pem"
+
+    pub_exists = pub_path.exists() and pub_path.stat().st_size > 0
+    priv_exists = priv_path.exists() and priv_path.stat().st_size > 0
+
+    if pub_exists:
+        print(f"[CRYPTO] Removed OLD RSA key from disk {pub_path}")
+        os.remove(pub_path)
+        
+    if priv_exists:
+        print(f"[CRYPTO] Removed OLD RSA key from disk {priv_path}")
+        os.remove(priv_path)
+        
+    new_puk, new_prk = get_rsa_keypair(keysize, key_directory)
+
+    return old_puk, old_prk, new_puk, new_prk
 
 def load_rsa_key(filename: Path | str):
     """Import RSA key from (dot) PEM"""
@@ -185,14 +210,14 @@ def rsa_decrypt(private_key, data: bytes) -> bytes:
     return cipher.decrypt(data)
 
 
-def generate_rsa_pss_signature(rsa_private_key: RSA.RsaKey, message: bytes) -> bytes:
+def generate_rsa_pss_signature(rsa_private_key: RsaKey, message: bytes) -> bytes:
     """Generates an RSA PSS signature"""
     h = SHA512.new(message)
     signature = pss.new(rsa_private_key).sign(h) # type: ignore
     return signature
 
 
-def verify_rsa_pss_signature(rsa_public_key: RSA.RsaKey, message: bytes, signature: bytes) -> bool:
+def verify_rsa_pss_signature(rsa_public_key: RsaKey, message: bytes, signature: bytes) -> bool:
     """Verifies an RSA PSS signature"""
     h = SHA512.new(message)
     try:
@@ -454,7 +479,7 @@ def _recv_aes_blob(connection, aes_key, chunked: bool = True):
     return dec_bytes, chunk_count
 
 
-def recv_aes_encrypted(connection, aes_key, client_rsa_public_key: RSA.RsaKey | None = None):
+def recv_aes_encrypted(connection, aes_key, client_rsa_public_key: RsaKey | None = None):
     """Receive AES encrypted data with optional RSA signature (chunked)"""
     data_dec_bytes, data_lenchunks = _recv_aes_blob(
         connection, aes_key, chunked=True)
@@ -468,7 +493,7 @@ def recv_aes_encrypted(connection, aes_key, client_rsa_public_key: RSA.RsaKey | 
     return data_dec_bytes, data_lenchunks
 
 
-def recv_unchunked_aes_encrypted(connection, aes_key, client_rsa_public_key: RSA.RsaKey | None = None):
+def recv_unchunked_aes_encrypted(connection, aes_key, client_rsa_public_key: RsaKey | None = None):
     """Receive AES encrypted data with optional RSA signature (unchunked)"""
     data_dec_bytes, _ = _recv_aes_blob(connection, aes_key, chunked=False)
 
@@ -481,6 +506,27 @@ def recv_unchunked_aes_encrypted(connection, aes_key, client_rsa_public_key: RSA
 
     return data_dec_bytes
 
+
+def refresh_server_keys():
+    global rsa_public_key
+    global rsa_private_key
+    global old_rsa_public_key
+    global old_rsa_private_key
+    
+    old_rsa_public_key, old_rsa_private_key, rsa_public_key, rsa_private_key = regenerate_rsa_keys()
+    
+    print(f"len opuk {old_rsa_public_key} len oprk {old_rsa_private_key} len npuk {rsa_public_key} len nprk {rsa_private_key}")
+    for id, info in list(client_machines_info.items()):
+        if info is not None:
+            _send_command_to_client(info, b"RefreshServerRSA")
+
+
+def refresh_all_client_keys():
+    for id, info in list(client_machines_info.items()):
+        if info is not None:
+            _send_command_to_client(info, b'RefreshRSAKeys')
+
+
 # --------------------------------------------------------------------------- #
 # All pre-code authentication logic (Handshake)
 # --------------------------------------------------------------------------- #
@@ -491,12 +537,33 @@ def perform_handshake(connection: socket.socket) -> HandshakeResult:
     decrypt AES session key, receive machine ID, and load the client's RSA public key."""
 
     client_aes_key_enc_bytes = connection.recv(CRYPTO_AES_KEYSIZE)
-    client_aes_key = rsa_decrypt(rsa_private_key, client_aes_key_enc_bytes)
+    
+    client_aes_key = None
+    
+    try:
+        client_aes_key = rsa_decrypt(rsa_private_key, client_aes_key_enc_bytes)
+    except Exception:
+        pass
+
+    
+    if client_aes_key is None and old_rsa_private_key is not None:
+        try:
+            client_aes_key = rsa_decrypt(old_rsa_private_key, client_aes_key_enc_bytes)
+        except Exception:
+            pass
+        
+    if client_aes_key is None:
+        raise Exception("Client AES Key could not be attained")
+        
     print(f"[CRYPTO] Client AES key (HEX): 0x{client_aes_key.hex().upper()}")
 
     # Receive machine_id
-    machine_id = recv_unchunked_aes_encrypted(
-        connection, client_aes_key).decode("UTF-8")
+    try:
+        machine_id = recv_unchunked_aes_encrypted(connection, client_aes_key).decode("UTF-8")
+    except Exception as e:
+        print(f"[HANDSHAKE] Failed decrypting machineID")
+        raise Exception("MachineID Decryption Failed... AES Key is likely incorrect")
+    
     print(f"[NETWORK] Recv MachineID {machine_id}")
 
     # Load client's pre-shared RSA public key
@@ -519,8 +586,10 @@ def perform_handshake(connection: socket.socket) -> HandshakeResult:
 # --------------------------------------------------------------------------- #
 
 
-rsa_public_key, rsa_private_key = get_rsa_keypair(
-    CRYPTO_RSA_KEYSIZE, KEY_DIRECTORY)
+rsa_public_key, rsa_private_key = get_rsa_keypair(CRYPTO_RSA_KEYSIZE, KEY_DIRECTORY)
+
+# Used for Server Key Rotation Logic
+old_rsa_public_key, old_rsa_private_key = None, None
 
 print(f"[CRYPTO] Loaded {rsa_private_key}")
 print(f"[CRYPTO] Loaded {rsa_public_key}")
@@ -528,6 +597,12 @@ print(f"[CRYPTO] Loaded {rsa_public_key}")
 
 def handle_client_request(connection: socket.socket, address):
     """Handle a fully authenticated client request after handshake, routing based on operation code."""
+
+    global rsa_public_key
+    global rsa_private_key
+    global old_rsa_public_key
+    global old_rsa_private_key
+    
 
     print(f"[NETWORK] Connection from {address} accepted")
 
@@ -539,7 +614,7 @@ def handle_client_request(connection: socket.socket, address):
         connection.close()
         return
 
-    # Receive operation code
+    
     code = recv_fixed_width(connection, 30)
 
     if code == b'NegotiateReverseConnection':
@@ -571,6 +646,27 @@ def handle_client_request(connection: socket.socket, address):
             connection.shutdown(socket.SHUT_WR)
             connection.close()
         return
+    
+    
+    if code == b'RequestNewRSAKey':
+        pem = rsa_public_key.export_key()
+        print(f"[CRYPTO] Sending PEM of new RSA Public Key, Length is {len(pem)}")
+        
+        send_int(connection, len(pem))
+        connection.sendall(pem)
+        
+        return        
+        
+    if code == b'RefreshClientRSAKeys':
+        data, chunks = recv_chunked(connection)
+
+        new_client_public_key = RSA.import_key(data)
+
+        with open(KEY_DIRECTORY / f"client_{handshake.machine_id}_rsa_public_key.pem", "rb+") as f:
+            f.write(new_client_public_key.export_key())
+        return
+    
+    print(code)
 
     connection.shutdown(socket.SHUT_WR)
     connection.close()
@@ -587,6 +683,9 @@ def cli_machines():
     print(
         f"[CLI] +-{"".ljust(32, '-')}-+-{"".ljust(15, '-')}-+-{"".ljust(5, '-')}-+")
     for id, info in list(client_machines_info.items()):
+        if id is None or info is None:
+            return
+        
         print(
             f"[CLI] | {str(info.id).ljust(32, ' ')} | {str(info.ip).ljust(15, ' ')} | {str(info.port).ljust(5, ' ')} |")
 
@@ -656,6 +755,9 @@ def cli_whois(cmd):
 
     ip = cmd_parts[1]
     for id, info in list(client_machines_info.items()):
+        if id is None or info is None:
+            return
+        
         if info.ip == ip:
             print(
                 f"[CLI] | {"machine-id".ljust(32, ' ')} | {"IP".ljust(15, ' ')} | {"PORT".ljust(5, ' ')} |")
@@ -678,8 +780,8 @@ def cli_enc_logs():
     for f in raw_logs:
         print("[LOG/ENC]")
         aes_encrypt_file(f)
-        
-        
+    
+
 def cli_exit():
     for id, info in list(client_machines_info.items()):
         cli_renegotiate(f"renegotiate {id}")
@@ -702,6 +804,8 @@ def command_line_interface():
                     print("[CLI] 'whois <ip>' - lookup machine by IP")
                     print("[CLI] 'dec_logs' - Decrypts all logs with the logstore key, for reading them")
                     print("[CLI] 'enc_logs' - Encrypts all logs with the logstore key, for securing them")
+                    print("[CLI] 'refresh_server_keys' ")
+                    print("[CLI] 'refresh_client_keys' ")
                     print("[CLI] 'exit' - shutdown server")
                 case _ if cmd.startswith("machines"):
                     cli_machines()
@@ -717,6 +821,10 @@ def command_line_interface():
                     cli_dec_logs()
                 case _ if cmd.startswith("enc_logs"):
                     cli_enc_logs()
+                case _ if cmd.startswith("refresh_server_keys"):
+                    refresh_server_keys()
+                case _ if cmd.startswith("refresh_client_keys"):
+                    refresh_all_client_keys()
                 case _ if cmd.startswith("exit"):
                     cli_exit()
                 case _:
