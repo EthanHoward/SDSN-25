@@ -91,6 +91,16 @@ def security_log(msg: str):
     with get_current_log() as f:
         f.write(f"{log}\n")
         f.close()
+        
+def perf_log(dt_start: datetime, dt_end: datetime, msg: str):
+    """For logging info of a given process and the time it takes to complete"""
+    
+    log = f"{datetime.now().strftime("[%d/%m/%Y, %H:%M:%S]")}[PERFLOG] {msg} took {(dt_end-dt_start).total_seconds()} seconds"
+    print(log)
+    
+    with get_current_log() as f:
+        f.write(f"{log}\n")
+        f.close()
 
 # --------------------------------------------------------------------------- #
 # Key Management
@@ -202,24 +212,36 @@ def load_rsa_key(filename: Path | str):
 
 def aes_encrypt(key, plaintext: bytes):
     """Encrypt the given data with AES"""
+    ct_start = datetime.now()
     cipher = AES.new(key, AES.MODE_GCM)
     ciphertext, tag = cipher.encrypt_and_digest(plaintext)
 
-    return {
+    enc_obj = {
         "nonce": base64.b64encode(cipher.nonce),
         "ciphertext": base64.b64encode(ciphertext),
         "tag": base64.b64encode(tag)
     }
 
+    ct_done = datetime.now()
+    perf_log(ct_start, ct_done, f"AES Encryption of data size {len(plaintext)} bytes with keysize {CRYPTO_AES_KEYSIZE}")
+
+    return enc_obj
 
 def aes_decrypt(key, encrypted_data: dict):
     """Decrypt AES-Encrypted data"""
+    ct_start = datetime.now()
+    
     nonce = base64.b64decode(encrypted_data["nonce"])
     ciphertext = base64.b64decode(encrypted_data["ciphertext"])
     tag = base64.b64decode(encrypted_data["tag"])
 
     cipher = AES.new(key, AES.MODE_GCM, nonce)
-    return cipher.decrypt_and_verify(ciphertext, tag)
+    decver_bytes = cipher.decrypt_and_verify(ciphertext, tag)
+    ct_done = datetime.now()
+    
+    perf_log(ct_start, ct_done, f"AES Decryption of data size {len(nonce) + len(ciphertext) + len(tag)} bytes with keysize {CRYPTO_AES_KEYSIZE}")
+    
+    return decver_bytes
 
 
 # --------------------------------------------------------------------------- #
@@ -229,14 +251,26 @@ def aes_decrypt(key, encrypted_data: dict):
 
 def rsa_encrypt(public_key, data: bytes) -> bytes:
     """Encrypt given data with RSA"""
+    ct_start = datetime.now()
     cipher = PKCS1_OAEP.new(public_key)
-    return cipher.encrypt(data)
+    enc_bytes =  cipher.encrypt(data)
+    ct_done = datetime.now()
+    
+    perf_log(ct_start, ct_done, f"RSA Encryption of data size {len(data)} bytes with keysize {CRYPTO_RSA_KEYSIZE}")
+    
+    return enc_bytes
 
 
 def rsa_decrypt(private_key, data: bytes) -> bytes:
     """Decrypt RSA-Encrypted data"""
+    ct_start = datetime.now()
     cipher = PKCS1_OAEP.new(private_key)
-    return cipher.decrypt(data)
+    dec_bytes = cipher.decrypt(data)
+    ct_done = datetime.now()
+    
+    perf_log(ct_start, ct_done, f"RSA Decryption of data size {len(data)} bytes with keysize {CRYPTO_RSA_KEYSIZE}")
+    
+    return dec_bytes
 
 
 def generate_rsa_pss_signature(rsa_private_key: RsaKey, message: bytes) -> bytes:

@@ -1,0 +1,82 @@
+[10/12/2025, 20:01:12][CRYPTO] Loading RSA Keys...
+[10/12/2025, 20:01:12][CRYPTO] Loaded Private RSA key at 0x1030FD5E0
+[10/12/2025, 20:01:12][CRYPTO] Loaded Public RSA key at 0x102F0FE90
+[10/12/2025, 20:01:12][NETWORK] Listening @ 0.0.0.0:19385, RSA_KS: 2048
+[10/12/2025, 20:01:12][SCHED] Scheduler Thread Started, Log Request Time is '16:04:00'
+[10/12/2025, 20:01:12][NETWORK] Waiting for connections...
+[10/12/2025, 20:01:12][NETWORK] Connection from ('127.0.0.1', 61071) accepted
+[10/12/2025, 20:01:12][NETWORK] Waiting for connections...
+[10/12/2025, 20:01:12][PERFLOG] RSA Decryption of data size 256 bytes with keysize 2048 took 0.004508 seconds
+[10/12/2025, 20:01:12][CRYPTO] Client AES key (HEX): 0x8EA19D7EA1AFAD08D875FDCE259F45DD43FF3A097C8AF72CEDC00E20B07293F3
+[10/12/2025, 20:01:12][PERFLOG] AES Decryption of data size 46 bytes with keysize 256 took 0.006162 seconds
+[10/12/2025, 20:01:12][NETWORK] Recv MachineID mi-flippin-mac
+[10/12/2025, 20:01:12][HANDSHAKE] Complete for mi-flippin-mac
+[10/12/2025, 20:01:12][CLI] Input '?' or 'help' to list commands
+[10/12/2025, 20:01:19][NETWORK] Sending log request to mi-flippin-mac via 127.0.0.1:61072
+[10/12/2025, 20:01:19][NETWORK] Connection from ('127.0.0.1', 61134) accepted
+[10/12/2025, 20:01:19][NETWORK] Waiting for connections...
+[10/12/2025, 20:01:19][PERFLOG] RSA Decryption of data size 256 bytes with keysize 2048 took 0.007194 seconds
+[10/12/2025, 20:01:19][CRYPTO] Client AES key (HEX): 0x78ED8EC0284D8B4E635D79A188F64B05BDF266C926C2383D643F0B45FB9E7A65
+[10/12/2025, 20:01:19][PERFLOG] AES Decryption of data size 46 bytes with keysize 256 took 0.000228 seconds
+[10/12/2025, 20:01:19][NETWORK] Recv MachineID mi-flippin-mac
+[10/12/2025, 20:01:19][HANDSHAKE] Complete for mi-flippin-mac
+[10/12/2025, 20:01:19][NETWORK] Client sending 4 log files
+[10/12/2025, 20:01:19][PERFLOG] AES Decryption of data size 80 bytes with keysize 256 took 0.00015 seconds
+[10/12/2025, 20:01:19][PERFLOG] AES Decryption of data size 288 bytes with keysize 256 took 0.000191 seconds
+[10/12/2025, 20:01:19][PERFLOG] AES Decryption of data size 1678 bytes with keysize 256 took 0.000119 seconds
+[10/12/2025, 20:01:19][PERFLOG] AES Decryption of data size 288 bytes with keysize 256 took 0.000204 seconds
+[10/12/2025, 20:01:19][NETWORK] Recv log /var/log/system.log (1) with chunks 1
+[10/12/2025, 20:01:19][FS] Saving log to /Users/ethan/SDSN-25/server/log/mi-flippin-mac/var/log/2025-12-10_20-01-19_system.log
+[10/12/2025, 20:01:19][PERFLOG] AES Encryption of data size 8437 bytes with keysize 256 took 0.000228 seconds
+[10/12/2025, 20:01:19][FS/AES] Saving file aes to /Users/ethan/SDSN-25/server/log/mi-flippin-mac/var/log/2025-12-10_20-01-19_system.log.aes
+[10/12/2025, 20:01:19][FS/AES] Saving file sha to /Users/ethan/SDSN-25/server/log/mi-flippin-mac/var/log/2025-12-10_20-01-19_system.log.sha
+[10/12/2025, 20:01:19][PERFLOG] AES Decryption of data size 73 bytes with keysize 256 took 0.000125 seconds
+[10/12/2025, 20:01:20][PERFLOG] AES Decryption of data size 288 bytes with keysize 256 took 0.000104 seconds
+[10/12/2025, 20:01:20][PERFLOG] AES Decryption of data size 277132 bytes with keysize 256 took 0.003926 seconds
+[10/12/2025, 20:01:20][PERFLOG] AES Decryption of data size 288 bytes with keysize 256 took 0.000109 seconds
+[10/12/2025, 20:01:20][NETWORK] Recv log /var/log/wifi.log (1) with chunks 91
+[10/12/2025, 20:01:20][FS] Saving log to /Users/ethan/SDSN-25/server/log/mi-flippin-mac/var/log/2025-12-10_20-01-20_wifi.log
+[10/12/2025, 20:01:20][PERFLOG] AES Encryption of data size 1875348 bytes with keysize 256 took 0.023059 seconds
+[10/12/2025, 20:01:20][FS/AES] Saving file aes to /Users/ethan/SDSN-25/server/log/mi-flippin-mac/var/log/2025-12-10_20-01-20_wifi.log.aes
+[10/12/2025, 20:01:20][FS/AES] Saving file sha to /Users/ethan/SDSN-25/server/log/mi-flippin-mac/var/log/2025-12-10_20-01-20_wifi.log.sha
+[10/12/2025, 20:01:20][PERFLOG] AES Decryption of data size 84 bytes with keysize 256 took 0.000143 seconds
+[10/12/2025, 20:01:20][PERFLOG] AES Decryption of data size 288 bytes with keysize 256 took 0.000107 seconds
+[10/12/2025, 20:01:20][PERFLOG] AES Decryption of data size 5624 bytes with keysize 256 took 0.000196 seconds
+[10/12/2025, 20:01:20][PERFLOG] AES Decryption of data size 288 bytes with keysize 256 took 0.000101 seconds
+[10/12/2025, 20:01:20][NETWORK] Recv log /var/log/fsck_apfs.log (1) with chunks 2
+[10/12/2025, 20:01:20][FS] Saving log to /Users/ethan/SDSN-25/server/log/mi-flippin-mac/var/log/2025-12-10_20-01-20_fsck_apfs.log
+[10/12/2025, 20:01:20][PERFLOG] AES Encryption of data size 56864 bytes with keysize 256 took 0.00074 seconds
+[10/12/2025, 20:01:20][FS/AES] Saving file aes to /Users/ethan/SDSN-25/server/log/mi-flippin-mac/var/log/2025-12-10_20-01-20_fsck_apfs.log.aes
+[10/12/2025, 20:01:20][FS/AES] Saving file sha to /Users/ethan/SDSN-25/server/log/mi-flippin-mac/var/log/2025-12-10_20-01-20_fsck_apfs.log.sha
+[10/12/2025, 20:01:20][PERFLOG] AES Decryption of data size 80 bytes with keysize 256 took 7.6e-05 seconds
+[10/12/2025, 20:01:20][PERFLOG] AES Decryption of data size 288 bytes with keysize 256 took 0.000119 seconds
+[10/12/2025, 20:01:20][PERFLOG] AES Decryption of data size 1212 bytes with keysize 256 took 0.000118 seconds
+[10/12/2025, 20:01:20][PERFLOG] AES Decryption of data size 288 bytes with keysize 256 took 0.000125 seconds
+[10/12/2025, 20:01:20][NETWORK] Connection from ('127.0.0.1', 61140) accepted
+[10/12/2025, 20:01:20][NETWORK] Waiting for connections...
+[10/12/2025, 20:01:20][NETWORK] Recv log /var/log/fsck_hfs.log (1) with chunks 1
+[10/12/2025, 20:01:20][FS] Saving log to /Users/ethan/SDSN-25/server/log/mi-flippin-mac/var/log/2025-12-10_20-01-20_fsck_hfs.log
+[10/12/2025, 20:01:20][PERFLOG] AES Encryption of data size 6975 bytes with keysize 256 took 0.000185 seconds
+[10/12/2025, 20:01:20][FS/AES] Saving file aes to /Users/ethan/SDSN-25/server/log/mi-flippin-mac/var/log/2025-12-10_20-01-20_fsck_hfs.log.aes
+[10/12/2025, 20:01:20][FS/AES] Saving file sha to /Users/ethan/SDSN-25/server/log/mi-flippin-mac/var/log/2025-12-10_20-01-20_fsck_hfs.log.sha
+[10/12/2025, 20:01:20][PERFLOG] RSA Decryption of data size 256 bytes with keysize 2048 took 0.003605 seconds
+[10/12/2025, 20:01:20][CRYPTO] Client AES key (HEX): 0x8744134847E1456130944111B42DB05E9F51C458910C2BF3BCA69171B46990C3
+[10/12/2025, 20:01:20][PERFLOG] AES Decryption of data size 46 bytes with keysize 256 took 0.000108 seconds
+[10/12/2025, 20:01:20][NETWORK] Recv MachineID mi-flippin-mac
+[10/12/2025, 20:01:20][HANDSHAKE] Complete for mi-flippin-mac
+[10/12/2025, 20:16:29][NETWORK] Connecting to client mi-flippin-mac via 127.0.0.1:61141
+[10/12/2025, 20:16:29][SERVER] Shutting Down
+[10/12/2025, 20:16:57][CRYPTO] Loading RSA Keys...
+[10/12/2025, 20:16:57][CRYPTO] Loaded Private RSA key at 0x1010F2DE0
+[10/12/2025, 20:16:57][CRYPTO] Loaded Public RSA key at 0x1015627B0
+[10/12/2025, 20:16:57][NETWORK] Listening @ 0.0.0.0:19385, RSA_KS: 2048
+[10/12/2025, 20:16:57][SCHED] Scheduler Thread Started, Log Request Time is '16:04:00'
+[10/12/2025, 20:16:57][NETWORK] Waiting for connections...
+[10/12/2025, 20:16:58][CLI] Input '?' or 'help' to list commands
+[10/12/2025, 20:17:02][NETWORK] Connection from ('127.0.0.1', 51571) accepted
+[10/12/2025, 20:17:02][NETWORK] Waiting for connections...
+[10/12/2025, 20:17:02][PERFLOG] RSA Decryption of data size 256 bytes with keysize 2048 took 0.003606 seconds
+[10/12/2025, 20:17:02][CRYPTO] Client AES key (HEX): 0xEE9A89785D83F27C20E7B1E0F677E54222BCA16197157BD7F7F88F0C167F0C5D
+[10/12/2025, 20:17:02][PERFLOG] AES Decryption of data size 46 bytes with keysize 256 took 0.00386 seconds
+[10/12/2025, 20:17:02][NETWORK] Recv MachineID mi-flippin-mac
+[10/12/2025, 20:17:02][HANDSHAKE] Complete for mi-flippin-mac
