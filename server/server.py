@@ -24,13 +24,14 @@ from Crypto.Cipher import AES, PKCS1_OAEP
 config = configparser.ConfigParser()
 config.read("server_config.ini")
 
-# Where this server should bind, defaults to 0.0.0.0:19385
+# Where this server should bind, default is meant to be 0.0.0.0:19385
 SERVER_HOST = config['server']['host']
 SERVER_PORT = int(config['server']['port'])
 LOG_SAVE_PATH = config['server']['log_save_path']
 TIME_TO_REQUEST_LOGS = config['server']['time_to_request_logs']
+SECURITY_LOG_PATH = config['server']['security_log_path']
 
-# Crypto settings, clients and servers must match
+# Crypto settings, clients and servers must match.
 CRYPTO_RSA_KEYSIZE = int(config['crypto']['rsa_keysize'])
 CRYPTO_AES_KEYSIZE = int(config['crypto']['aes_keysize'])
 
@@ -62,6 +63,34 @@ class HandshakeResult:
     aes_key: bytes
     client_rsa_public_key: RsaKey | None
 
+# --------------------------------------------------------------------------- #
+# Security Logging
+# --------------------------------------------------------------------------- #
+
+def get_current_log():
+    ct = datetime.now()
+    ct_y = ct.year
+    ct_m = ct.month
+    ct_d = ct.day
+    ct_h = ct.hour
+    
+    cfg_security_log_path = Path(SECURITY_LOG_PATH).resolve()
+
+    cfg_security_log_path.mkdir(parents=True, exist_ok=True)
+    
+    full_path = cfg_security_log_path / f"{ct_y}-{ct_m}-{ct_d}-{ct_h}-securitylog.log"
+    
+    return open(full_path, "a+")
+
+def security_log(msg: str):
+    """Replaces standard print, prints the given string and adds it to the security log"""
+    
+    log = f"{datetime.now().strftime("[%d/%m/%Y, %H:%M:%S]")}{msg}"
+    print(log)
+    
+    with get_current_log() as f:
+        f.write(f"{log}\n")
+        f.close()
 
 # --------------------------------------------------------------------------- #
 # Key Management
@@ -77,7 +106,7 @@ def generate_rsa_keypair(bits=CRYPTO_RSA_KEYSIZE):
 
 
 def generate_aes_key(bits=CRYPTO_AES_KEYSIZE):
-    """AES Keys can be 128, 192 or 256 bits."""
+    """AES Keys can be 128, 192 or 256 bits. (os.urandom runs on bytes, hence the division by 8)"""
     return os.urandom(int(bits/8))
 
 
@@ -118,12 +147,12 @@ def get_rsa_keypair(keysize: int, key_directory: Path):
     priv_exists = priv_path.exists() and priv_path.stat().st_size > 0
 
     if pub_exists and priv_exists:
-        print("[CRYPTO] Loading RSA Keys...")
+        security_log("[CRYPTO] Loading RSA Keys...")
         rsa_public_key = load_rsa_key(pub_path)
         rsa_private_key = load_rsa_key(priv_path)
         return rsa_public_key, rsa_private_key
 
-    print("[CRYPTO] Generating new RSA keys...")
+    security_log("[CRYPTO] Generating new RSA keys...")
     rsa_private_key = RSA.generate(keysize)
     rsa_public_key = rsa_private_key.publickey()
 
@@ -149,11 +178,11 @@ def regenerate_rsa_keys(keysize: int = CRYPTO_RSA_KEYSIZE, key_directory: Path =
     priv_exists = priv_path.exists() and priv_path.stat().st_size > 0
 
     if pub_exists:
-        print(f"[CRYPTO] Removed OLD RSA key from disk {pub_path}")
+        security_log(f"[CRYPTO] Removed OLD RSA key from disk {pub_path}")
         os.remove(pub_path)
         
     if priv_exists:
-        print(f"[CRYPTO] Removed OLD RSA key from disk {priv_path}")
+        security_log(f"[CRYPTO] Removed OLD RSA key from disk {priv_path}")
         os.remove(priv_path)
         
     new_puk, new_prk = get_rsa_keypair(keysize, key_directory)
@@ -247,7 +276,7 @@ def recv_log(connection, aes_key, client_rsa_public_key):
     log_path = _decompress_and_decode(dec_pth)
     log_data = _decompress_and_decode(dec_log)
 
-    print(
+    security_log(
         f"[NETWORK] Recv log {log_path} ({lench_pth}) with chunks {lench_log}")
     return log_path, log_data
 
@@ -277,7 +306,7 @@ def save_log(machine_id, log_path, log_data) -> None:
     full_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(full_path, "w") as f:
-        print(f"[FS] Saving log to {full_path}")
+        security_log(f"[FS] Saving log to {full_path}")
         f.write(log_data)
     
     
@@ -297,11 +326,11 @@ def aes_encrypt_file(filepath: Path, key=get_logstore_key()):
 
     # Write the encrypted data to a .aes file for now.
     with open(f"{filepath}.aes", "wb") as f:
-        print(f"[FS/AES] Saving file aes to {filepath}.aes")
+        security_log(f"[FS/AES] Saving file aes to {filepath}.aes")
         pickle.dump(data_aes_enc, f)
 
     with open(f"{filepath}.sha", "wb") as f:
-        print(f"[FS/AES] Saving file sha to {filepath}.sha")
+        security_log(f"[FS/AES] Saving file sha to {filepath}.sha")
         f.write(SHA512.new(data).digest())
     
     # Delete original, keep encrypted ones
@@ -314,7 +343,7 @@ def aes_decrypt_file(filepath_aes: Path, filepath_sha: Path, key=get_logstore_ke
     fp_sha_exists = filepath_sha.exists() and filepath_sha.stat().st_size > 0
     
     if not fp_aes_exists or not fp_sha_exists:
-        print(f"[FS/AES] AES or SHA file does not exist... aes: {filepath_aes} sha: {filepath_sha}")
+        security_log(f"[FS/AES] AES or SHA file does not exist... aes: {filepath_aes} sha: {filepath_sha}")
         return False
     
     if not str(filepath_aes).endswith(".aes") or not str(filepath_sha).endswith(".sha"):
@@ -370,7 +399,7 @@ def get_all_encrypted_log_files() -> dict[Path, Path]:
                 if af.stem == f.stem and af.name.endswith(".aes"):
                     pairs[af] = f
     
-    print(f"[FS] {len(pairs.keys())} encrypted log pairs")
+    security_log(f"[FS] {len(pairs.keys())} encrypted log pairs")
     
     return pairs
 
@@ -383,7 +412,7 @@ def get_all_raw_log_files() -> list[Path]:
         if not f.name.endswith(".aes") and not f.name.endswith(".sha"):
             raw_logs.append(f.resolve())
             
-    print(f"[FS] {len(raw_logs)} raw logfiles")
+    security_log(f"[FS] {len(raw_logs)} raw logfiles")
     
     return raw_logs
 
@@ -457,7 +486,6 @@ def send_fixed_width(sock: socket.socket, data: bytes, width: int):
     padded = data.ljust(width, b'\x00')
     sock.sendall(padded)
 
-
 def _recv_aes_blob(connection, aes_key, chunked: bool = True):
     """Helper to receive AES encrypted blob (nonce + ciphertext + tag)"""
     nonce_sz = recv_int(connection)
@@ -515,7 +543,6 @@ def refresh_server_keys():
     
     old_rsa_public_key, old_rsa_private_key, rsa_public_key, rsa_private_key = regenerate_rsa_keys()
     
-    print(f"len opuk {old_rsa_public_key} len oprk {old_rsa_private_key} len npuk {rsa_public_key} len nprk {rsa_private_key}")
     for id, info in list(client_machines_info.items()):
         if info is not None:
             _send_command_to_client(info, b"RefreshServerRSA")
@@ -543,6 +570,7 @@ def perform_handshake(connection: socket.socket) -> HandshakeResult:
     try:
         client_aes_key = rsa_decrypt(rsa_private_key, client_aes_key_enc_bytes)
     except Exception:
+        security_log(f"[SECVIO] Failed to decrypt client aes session key, client must be unauthorised or using the wrong server key")
         pass
 
     
@@ -555,25 +583,26 @@ def perform_handshake(connection: socket.socket) -> HandshakeResult:
     if client_aes_key is None:
         raise Exception("Client AES Key could not be attained")
         
-    print(f"[CRYPTO] Client AES key (HEX): 0x{client_aes_key.hex().upper()}")
+    security_log(f"[CRYPTO] Client AES key (HEX): 0x{client_aes_key.hex().upper()}")
 
     # Receive machine_id
     try:
         machine_id = recv_unchunked_aes_encrypted(connection, client_aes_key).decode("UTF-8")
     except Exception as e:
-        print(f"[HANDSHAKE] Failed decrypting machineID")
+        security_log(f"[HANDSHAKE] Failed decrypting machineID")
         raise Exception("MachineID Decryption Failed... AES Key is likely incorrect")
     
-    print(f"[NETWORK] Recv MachineID {machine_id}")
+    security_log(f"[NETWORK] Recv MachineID {machine_id}")
 
     # Load client's pre-shared RSA public key
     try:
         client_rsa_public_key = load_rsa_key(
             f"client_{machine_id}_rsa_public_key.pem")
     except Exception as e:
-        raise Exception(f"Failed to load client RSA key: {e}")
+        security_log("[SECVIO] Client key could not be found, client is disallowed")
+        raise Exception("Client key could not be found")
 
-    print(f"[HANDSHAKE] Complete for {machine_id}")
+    security_log(f"[HANDSHAKE] Complete for {machine_id}")
 
     return HandshakeResult(
         machine_id=machine_id,
@@ -591,8 +620,8 @@ rsa_public_key, rsa_private_key = get_rsa_keypair(CRYPTO_RSA_KEYSIZE, KEY_DIRECT
 # Used for Server Key Rotation Logic
 old_rsa_public_key, old_rsa_private_key = None, None
 
-print(f"[CRYPTO] Loaded {rsa_private_key}")
-print(f"[CRYPTO] Loaded {rsa_public_key}")
+security_log(f"[CRYPTO] Loaded {rsa_private_key}")
+security_log(f"[CRYPTO] Loaded {rsa_public_key}")
 
 
 def handle_client_request(connection: socket.socket, address):
@@ -604,12 +633,12 @@ def handle_client_request(connection: socket.socket, address):
     global old_rsa_private_key
     
 
-    print(f"[NETWORK] Connection from {address} accepted")
+    security_log(f"[NETWORK] Connection from {address} accepted")
 
     try:
         handshake = perform_handshake(connection)
     except Exception as e:
-        print(f"[HANDSHAKE] Failed: {e}")
+        security_log(f"[HANDSHAKE] Failed: {e}")
         connection.shutdown(socket.SHUT_WR)
         connection.close()
         return
@@ -631,7 +660,7 @@ def handle_client_request(connection: socket.socket, address):
 
     if code == b'SendLogsBegin':
         logfile_count = recv_int(connection)
-        print(f"[NETWORK] Client sending {logfile_count} log files")
+        security_log(f"[NETWORK] Client sending {logfile_count} log files")
         try:
             for i in range(logfile_count):
                 log_path, log_data = recv_log(
@@ -641,7 +670,7 @@ def handle_client_request(connection: socket.socket, address):
                 )
                 save_log(handshake.machine_id, log_path, log_data)
         except Exception as e:
-            print(f"[CRYPTO] Client {handshake.machine_id} error: {e}")
+            security_log(f"[CRYPTO] Client {handshake.machine_id} error: {e}")
         finally:
             connection.shutdown(socket.SHUT_WR)
             connection.close()
@@ -650,7 +679,7 @@ def handle_client_request(connection: socket.socket, address):
     
     if code == b'RequestNewRSAKey':
         pem = rsa_public_key.export_key()
-        print(f"[CRYPTO] Sending PEM of new RSA Public Key, Length is {len(pem)}")
+        security_log(f"[CRYPTO] Sending PEM of new RSA Public Key, Length is {len(pem)}")
         
         send_int(connection, len(pem))
         connection.sendall(pem)
@@ -665,8 +694,6 @@ def handle_client_request(connection: socket.socket, address):
         with open(KEY_DIRECTORY / f"client_{handshake.machine_id}_rsa_public_key.pem", "rb+") as f:
             f.write(new_client_public_key.export_key())
         return
-    
-    print(code)
 
     connection.shutdown(socket.SHUT_WR)
     connection.close()
@@ -678,15 +705,15 @@ def handle_client_request(connection: socket.socket, address):
 
 def cli_machines():
     """Print a formatted table of all known client machines and their last negotiated reverse ports."""
-    print(
+    security_log(
         f"[CLI] | {"machine-id".ljust(32, ' ')} | {"IP".ljust(15, ' ')} | {"PORT".ljust(5, ' ')} |")
-    print(
+    security_log(
         f"[CLI] +-{"".ljust(32, '-')}-+-{"".ljust(15, '-')}-+-{"".ljust(5, '-')}-+")
     for id, info in list(client_machines_info.items()):
         if id is None or info is None:
             return
         
-        print(
+        security_log(
             f"[CLI] | {str(info.id).ljust(32, ' ')} | {str(info.ip).ljust(15, ' ')} | {str(info.port).ljust(5, ' ')} |")
 
 
@@ -700,25 +727,29 @@ def _find_client(machine_id: str) -> ClientInfo | None:
 
 def _send_command_to_client(client: ClientInfo, command: bytes):
     """Directly connect to a client's reverse listener and send a fixed-width command."""
-    connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    connection.connect((client.ip, client.port))
-    send_fixed_width(connection, command, 30)
-    client_machines_info[client.id] = None
+    try:
+        connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        connection.connect((client.ip, client.port))
+        send_fixed_width(connection, command, 30)
+        client_machines_info[client.id] = None
+    except Exception:
+        security_log(f"[ECONN] Could not connect to client {client.id} via {client.ip}:{client.port}")
+        return
 
 
 def cli_renegotiate(cmd):
     """CLI: Request the server to instruct a client to renegotiate its connection."""
     cmd_parts = cmd.strip().split(" ")
     if len(cmd_parts) != 2:
-        print("[CLI] Usage: renegotiate <machine-id>")
+        security_log("[CLI] Usage: renegotiate <machine-id>")
         return
 
     client = _find_client(cmd_parts[1])
     if not client:
-        print(f"[CLI] Client '{cmd_parts[1]}' not found")
+        security_log(f"[CLI] Client '{cmd_parts[1]}' not found")
         return
 
-    print(
+    security_log(
         f"[NETWORK] Connecting to client {client.id} via {client.ip}:{client.port}")
     _send_command_to_client(client, b'RenegotiateConnection')
 
@@ -727,15 +758,15 @@ def cli_force_send(cmd):
     """CLI: Force a specific client to immediately send its logs to the server."""
     cmd_parts = cmd.strip().split(" ")
     if len(cmd_parts) != 2:
-        print("[CLI] Usage: force_send <machine-id>")
+        security_log("[CLI] Usage: force_send <machine-id>")
         return
 
     client = _find_client(cmd_parts[1])
     if not client:
-        print(f"[CLI] Client '{cmd_parts[1]}' not found")
+        security_log(f"[CLI] Client '{cmd_parts[1]}' not found")
         return
 
-    print(
+    security_log(
         f"[NETWORK] Sending log request to {client.id} via {client.ip}:{client.port}")
     _send_command_to_client(client, b'SendLogs')
 
@@ -750,7 +781,7 @@ def cli_whois(cmd):
     """CLI: Given an IP address, display the associated machine ID if known."""
     cmd_parts = cmd.strip().split(" ")
     if len(cmd_parts) != 2:
-        print("[CLI] Usage: whois <ip>")
+        security_log("[CLI] Usage: whois <ip>")
         return
 
     ip = cmd_parts[1]
@@ -759,39 +790,39 @@ def cli_whois(cmd):
             return
         
         if info.ip == ip:
-            print(
+            security_log(
                 f"[CLI] | {"machine-id".ljust(32, ' ')} | {"IP".ljust(15, ' ')} | {"PORT".ljust(5, ' ')} |")
-            print(
+            security_log(
                 f"[CLI] +-{"".ljust(32, '-')}-+-{"".ljust(15, '-')}-+-{"".ljust(5, '-')}-+")
-            print(
+            security_log(
                 f"[CLI] | {str(info.id).ljust(32, ' ')} | {str(info.ip).ljust(15, ' ')} | {str(info.port).ljust(5, ' ')} |")
             return
-    print("[CLI] No machine found with that IP")
+    security_log("[CLI] No machine found with that IP")
 
 def cli_dec_logs():
     log_pairs: dict[Path, Path] = get_all_encrypted_log_files()
     for k in log_pairs.keys():
         v = log_pairs[k]
-        print(f"[LOG/DEC] A: {k} S: {v}")
+        security_log(f"[LOG/DEC] A: {k} S: {v}")
         aes_decrypt_file(k, v)
         
 def cli_enc_logs():
     raw_logs: list[Path] = get_all_raw_log_files()
     for f in raw_logs:
-        print("[LOG/ENC]")
+        security_log("[LOG/ENC]")
         aes_encrypt_file(f)
     
 
 def cli_exit():
     for id, info in list(client_machines_info.items()):
         cli_renegotiate(f"renegotiate {id}")
-    print("[SERVER] Shutting Down")
+    security_log("[SERVER] Shutting Down")
     exit()
 
 
 def command_line_interface():
     try:
-        print("[CLI] Input '?' or 'help' to list commands")
+        security_log("[CLI] Input '?' or 'help' to list commands")
         while True:
             cmd = input("[CLI]>").strip().lower()
             match cmd:
@@ -834,19 +865,21 @@ def command_line_interface():
 
 
 def scheduler():
-    print(
+    """Scheduler currently manages checking for the time to log"""
+    security_log(
         f"[SCHED] Scheduler Thread Started, Log Request Time is '{TIME_TO_REQUEST_LOGS}'")
     while True:
         ct = datetime.now()
         if ct.strftime('%H:%M:%S') == TIME_TO_REQUEST_LOGS:
-            print(f"[SCHED] Requesting Logs Now '{ct.strftime('%H:%M:%S')}'")
+            security_log(f"[SCHED] Requesting Logs Now '{ct.strftime('%H:%M:%S')}'")
             for id, info in list(client_machines_info.items()):
                 _send_command_to_client(info, b'SendLogs')
         time.sleep(1)
 
 
 def listen():
-    print(
+    "Main listener function, handles the main socket listener for clients to talk via"
+    security_log(
         f"[NETWORK] Listening @ {SERVER_HOST}:{SERVER_PORT}, RSA_KS: {CRYPTO_RSA_KEYSIZE}")
 
     connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -854,7 +887,7 @@ def listen():
     connection.listen(10)
 
     while True:
-        print("[NETWORK] Waiting for connections...")
+        security_log("[NETWORK] Waiting for connections...")
         sock, address = connection.accept()
         client_thread = threading.Thread(
             target=handle_client_request, args=(sock, address))

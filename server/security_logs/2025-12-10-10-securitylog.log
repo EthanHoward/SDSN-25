@@ -1,0 +1,34 @@
+[10/12/2025, 10:04:35][CRYPTO] Loading RSA Keys...
+[10/12/2025, 10:04:35][CRYPTO] Loaded Private RSA key at 0x10388B290
+[10/12/2025, 10:04:35][CRYPTO] Loaded Public RSA key at 0x1038637D0
+[10/12/2025, 10:04:35][SCHED] Scheduler Thread Started, Log Request Time is '16:04:00'
+[10/12/2025, 10:04:35][NETWORK] Listening @ 0.0.0.0:19385, RSA_KS: 2048
+[10/12/2025, 10:04:35][NETWORK] Waiting for connections...
+[10/12/2025, 10:04:36][CLI] Input '?' or 'help' to list commands
+[10/12/2025, 10:04:58][CRYPTO] Removed OLD RSA key from disk /Users/ethan/SDSN-25/server/server_rsa_public_key.pem
+[10/12/2025, 10:04:58][CRYPTO] Removed OLD RSA key from disk /Users/ethan/SDSN-25/server/server_rsa_private_key.pem
+[10/12/2025, 10:04:58][CRYPTO] Generating new RSA keys...
+[10/12/2025, 10:05:00]len opuk Public RSA key at 0x1038637D0 len oprk Private RSA key at 0x10388B290 len npuk Public RSA key at 0x1035DD9D0 len nprk Private RSA key at 0x10388BAA0
+[10/12/2025, 10:05:16][NETWORK] Connection from ('127.0.0.1', 63134) accepted
+[10/12/2025, 10:05:16][NETWORK] Waiting for connections...
+[10/12/2025, 10:05:16][SECVIO] Failed to decrypt client aes session key, client must be unauthorised or using the wrong server key
+[10/12/2025, 10:05:16][CRYPTO] Client AES key (HEX): 0xB09006514C05B8844B619983059F0512F5B323E1974C96C2D6FC0134458FD5FD
+[10/12/2025, 10:05:16][NETWORK] Recv MachineID mi-flippin-mac
+[10/12/2025, 10:05:16][HANDSHAKE] Complete for mi-flippin-mac
+[10/12/2025, 10:06:26][NETWORK] Connection from ('127.0.0.1', 63625) accepted
+[10/12/2025, 10:06:26][NETWORK] Waiting for connections...
+[10/12/2025, 10:06:26][SECVIO] Failed to decrypt client aes session key, client must be unauthorised or using the wrong server key
+[10/12/2025, 10:06:26][CRYPTO] Client AES key (HEX): 0x71D2A176F5E96980A327360DC65F3B74B0FA06345AB16E94714406997886EB0E
+[10/12/2025, 10:06:26][NETWORK] Recv MachineID mi-flippin-mac
+[10/12/2025, 10:06:26][HANDSHAKE] Complete for mi-flippin-mac
+[10/12/2025, 10:07:03][CRYPTO] Removed OLD RSA key from disk /Users/ethan/SDSN-25/server/server_rsa_public_key.pem
+[10/12/2025, 10:07:03][CRYPTO] Removed OLD RSA key from disk /Users/ethan/SDSN-25/server/server_rsa_private_key.pem
+[10/12/2025, 10:07:03][CRYPTO] Generating new RSA keys...
+[10/12/2025, 10:07:04]len opuk Public RSA key at 0x1035DD9D0 len oprk Private RSA key at 0x10388BAA0 len npuk Public RSA key at 0x103632F60 len nprk Private RSA key at 0x1038BD3D0
+[10/12/2025, 10:09:48][CRYPTO] Loading RSA Keys...
+[10/12/2025, 10:09:48][CRYPTO] Loaded Private RSA key at 0x1035DA210
+[10/12/2025, 10:09:48][CRYPTO] Loaded Public RSA key at 0x1035B3980
+[10/12/2025, 10:09:48][NETWORK] Listening @ 0.0.0.0:19385, RSA_KS: 2048
+[10/12/2025, 10:09:48][SCHED] Scheduler Thread Started, Log Request Time is '16:04:00'
+[10/12/2025, 10:09:48][NETWORK] Waiting for connections...
+[10/12/2025, 10:09:48][CLI] Input '?' or 'help' to list commands
