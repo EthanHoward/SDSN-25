@@ -13,7 +13,6 @@ from Crypto.Hash import SHA512
 from Crypto.Signature import pss
 from pathlib import Path
 
-#! TODO: Need to add code for refreshing client rsa keys (tell clients to get new ones) and SEPERATELY refresh the server RSA keys
 #! TODO: Also to add the hybrid-PKI approach, generates a cert per-session
 
 config = configparser.ConfigParser()
@@ -38,6 +37,12 @@ TARGET_LOG_FILES_TO_SEND = [
     "/var/log/auth.log", 
     "/var/log/ufw.log", 
     "/var/log/dpkg.log",
+    "/var/log/Xorg.0.log", # Unlikely that a user is going to have more than 4 XORG displays, EC's do exist so if needed more can be added
+    "/var/log/Xorg.1.log",
+    "/var/log/Xorg.2.log",
+    "/var/log/Xorg.3.log",
+    "/var/log/kern.log",
+    "/var/log/daemon.log",
     
     # UNIX / MacOS Logs
     "/var/log/system.log",

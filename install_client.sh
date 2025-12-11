@@ -4,6 +4,9 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
   
+apt-get update
+apt-get install python3-venv
+
 mkdir /usr/local/bin/lcli
 
 cd /usr/local/bin/lcli
