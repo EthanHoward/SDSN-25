@@ -18,9 +18,6 @@ from Crypto.PublicKey.RSA import RsaKey
 from Crypto.Signature import pss
 from Crypto.Cipher import AES, PKCS1_OAEP
 
-#! TODO: Need to add code for refreshing client rsa keys (tell clients to get new ones) and SEPERATELY refresh the server RSA keys
-#! TODO: Also to add the hybrid-PKI approach, generates a cert per-session
-
 config = configparser.ConfigParser()
 config.read("server_config.ini")
 

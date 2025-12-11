@@ -13,8 +13,6 @@ from Crypto.Hash import SHA512
 from Crypto.Signature import pss
 from pathlib import Path
 
-#! TODO: Also to add the hybrid-PKI approach, generates a cert per-session
-
 config = configparser.ConfigParser()
 config.read("client_config.ini")
 
