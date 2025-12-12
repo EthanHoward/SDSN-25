@@ -1,0 +1,8 @@
+[12/12/2025, 09:46:44][CRYPTO] Loading RSA Keys...
+[12/12/2025, 09:46:44][CRYPTO] Loaded Private RSA key at 0x100D56DE0
+[12/12/2025, 09:46:44][CRYPTO] Loaded Public RSA key at 0x100FBE7B0
+[12/12/2025, 09:46:44][SCHED] Scheduler Thread Started, Log Request Time is '16:04:00'
+[12/12/2025, 09:46:44][NETWORK] Listening @ 0.0.0.0:19385, RSA_KS: 2048
+[12/12/2025, 09:46:44][NETWORK] Waiting for connections...
+[12/12/2025, 09:46:44][CLI] Input '?' or 'help' to list commands
+[12/12/2025, 09:46:52][SERVER] Shutting Down

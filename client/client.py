@@ -255,7 +255,6 @@ def recv_fixed_width(sock: socket.socket, width: int) -> bytes:
     return buf.rstrip(b'\x00')
 
 def send_fixed_width(sock: socket.socket, data: bytes, width: int):
-    print(f"SendFW {data.decode("utf-8")}")
     if len(data) > width:
         raise ValueError("Data too long for fixed-width field")
     padded = data.ljust(width, b'\x00')
